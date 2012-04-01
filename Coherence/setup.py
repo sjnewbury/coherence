@@ -6,6 +6,7 @@ import sys
 try:
     from setuptools import setup, find_packages
     packages = find_packages()
+    setuptools = True
 except:
     setuptools = None
     from distutils.core import setup
