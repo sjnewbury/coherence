@@ -4,27 +4,29 @@
 Windows Build for the UPnP-Inspector
 ===========================================
 
-:Date: 2009-05-18
-:Author: lightyear
+:Date: 2012-09-23
+:Author: lightyear - D. Brian Kimmel
+
 
 Setting up dependencies
 ===========================================
-
 To be able to build the windows installer for the UPnP-Inspector for
 Windows you need to have some libraries and runtime environment set
 up.
 
+
 Python
 ~~~~~~~~~~~~~~~~~~~
-
 First of all you will need Python. Take care that the time this was
 written the UPnP-Inspector (or mostly Coherence) did not work with
 Python 2.6 or 3k. If this did not change meanwhile, take care to
 always download Python in the version 2.5 (2.5.3 at the time beeing).
 
+DBK - I am using Python 2.7.3 on Windows 7
+
+
 SetupTools
 ~~~~~~~~~~~~~~~~~~~
-
 Setuptools is as a strong dependency for coherence and the
 UPnP-Inspector as well as a runtime dependency for our developtment
 environment. In any case if you install the python you probably want
@@ -35,15 +37,17 @@ Download the easy_setup.py from and run python easy_setup.py from the
 commandline (maybe you need superuser rights if you aren't a super
 user yet).
 
+
 GTK-Runtime
 ~~~~~~~~~~~~~~~~~~~
-
 Download and install the GTK-Runtime. Don't you dare to throw away the
 downloaded installer! We need it later.
 
+DBK - gtk2-runtime-2.24.8-2011-12-03-ash.exe
+
+
 Python Bindinds for the runtime
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 We also need some Python-Bindings for the GTK-Runtime we just
 installed. In particular we need:
 
@@ -51,42 +55,46 @@ installed. In particular we need:
  * pycairo
  * pygobject
 
+
 PyWin32
 ~~~~~~~~~~~~~~~~~~~
-
 And last but not least we need pywin32. Don't ask, just install it,
 damn' it! - no seriously, it will be needed to find the right
 libraries (like gtk) and run properly.
+
 
 Build Tools
 ~~~~~~~~~~~~~~~~~~~
 
 bbfreeze
 ------------------------
-
 We use the cool bbfreeze project to create our binary of the
 Inspector. So we need that as well. It is very simple because we have
 easy_install:
 
   easy_install bbfreeze
+  
+DBK - pip install bbfreeze
+		Ends with   Error: Unable to find vcvarsall.bat
+
 
 internal dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 Twisted
 -------------------------
-
 If you have Visual-Studio 2003 you can try to install twisted 8.10.0
 with easy_install. I was not able to do that so I recommand to do what
 I did: download the twisted installer from their website and install
 it ;) .
 
 But do it! If you try to install Coherence or UPnP-Inspector before
-you did that you might fail.
+you did that you might fail.   DBK - will fail for sure.
+
+DBK - Twisted 12.1.0, zope.interface 4.0.1
+
 
 Coherence
 -------------------------
-
 To be able to build the Inspector you need Coherence of course. You
 can simply install it with easy_install:
 
@@ -95,23 +103,23 @@ can simply install it with easy_install:
 This will install Coherence and all its python dependencies (dispite
 twisted as we already installed ;) )
 
+
 The Net thing
 -------------------------
-
 We also need one thing that is optional (as it is only needed for
 windows)
 
 STILL NOT SURE IF IT IS NEEDED. WORKED W/O ON MY VISTA.
 
+
 Build
 ===========================================
-
 So let's get the build system. That is pretty easy with the following
 steps:
 
+
 building the binary
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 First we need to build the "exe" and corresponding dependencies. that
 is done by running:
 
@@ -124,9 +132,9 @@ and most importantly an upnp-inspector.exe file.
 You should be able to run this file directly from the commandline
 already. If that doesn't work you don't even have to continue ;) .
 
+
 package the installer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 Now we need to package that all together into a nice installer. Take
 care that the gtk-runtime installer is in the same folder now. It is
 going to be included in the installer and the packaging will fail if
@@ -146,7 +154,6 @@ Share it!
 
 Known bugs and todos
 ===============================
-
  - add the icon to the binary
  - add the icon to the installer
  - namespace in the installer faulty: UPNPInspector -> UPNP-Inspector

@@ -1,0 +1,14 @@
+eclipse.preferences.version=1
+encoding//Coherence/setup.py=utf-8
+encoding//UPnP-Inspector/bin/upnp-inspector=utf-8
+encoding//UPnP-Inspector/upnp_inspector/about.py=utf-8
+encoding//UPnP-Inspector/upnp_inspector/base.py=utf-8
+encoding//UPnP-Inspector/upnp_inspector/details.py=utf-8
+encoding//UPnP-Inspector/upnp_inspector/devices.py=utf-8
+encoding//UPnP-Inspector/upnp_inspector/events.py=utf-8
+encoding//UPnP-Inspector/upnp_inspector/extract.py=utf-8
+encoding//UPnP-Inspector/upnp_inspector/igd.py=utf-8
+encoding//UPnP-Inspector/upnp_inspector/log.py=utf-8
+encoding//UPnP-Inspector/upnp_inspector/mediarenderer.py=utf-8
+encoding//UPnP-Inspector/upnp_inspector/mediaserver.py=utf-8
+encoding//UPnP-Inspector/win32/upnp-inspector.py=utf-8
