@@ -1,6 +1,7 @@
 eclipse.preferences.version=1
 encoding//Coherence/setup.py=utf-8
 encoding//UPnP-Inspector/bin/upnp-inspector=utf-8
+encoding//UPnP-Inspector/upnp_inspector/__init__.py=utf-8
 encoding//UPnP-Inspector/upnp_inspector/about.py=utf-8
 encoding//UPnP-Inspector/upnp_inspector/base.py=utf-8
 encoding//UPnP-Inspector/upnp_inspector/details.py=utf-8

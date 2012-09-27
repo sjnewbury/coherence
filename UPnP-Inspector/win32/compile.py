@@ -5,13 +5,26 @@
 
 from bbfreeze import Freezer
 
-includes = ['coherence', 'setuptools', 'cairo',
-		'pango', 'gtk', 'pangocairo', 'atk', 'xml',
+l_includes = [
+		'coherence',
+		'setuptools',
+		'cairo',
+#		'pango',
+#		'gtk',
+#		'pangocairo',
+#		'atk',
+		'xml',
 		'coherence.base',
-		#'netifaces'
+#		'netifaces'
 		]
-f = Freezer("build", includes=includes)
-f.addScript("upnp-inspector.py", gui_only=True)
+xl_includes = [
+		'coherence',
+		'setuptools',
+		'xml',
+		'coherence.base',
+		]
+f = Freezer("build", includes = l_includes)
+f.addScript("upnp-inspector.py", gui_only = True)
 f.include_py = True
 f.use_compression = True
 f()

@@ -1,6 +1,5 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-#
+#!/usr/bin/env python
+
 # Licensed under the MIT license
 # http://opensource.org/licenses/mit-license.php
 
@@ -14,15 +13,18 @@
 
 import os, sys
 
-from twisted.internet import gtk2reactor
-gtk2reactor.install()
+from Tkinter import *
+from twisted.internet import tksupport
+
+#from twisted.internet import gtk2reactor
+#gtk2reactor.install()
 from twisted.internet import reactor
 from twisted.python import usage
 
-from upnp_inspector import __version__
+#from upnp_inspector import __version__
 from coherence import __version__ as coherence_version
 
-from upnp_inspector.base import Inspector
+from base import Inspector
 
 
 class Options(usage.Options):
@@ -46,6 +48,8 @@ class Options(usage.Options):
         print self.__str__()
         sys.exit(0)
 
+g_root = Tk()
+tksupport.install(g_root)
 
 if __name__ == '__main__':
 
