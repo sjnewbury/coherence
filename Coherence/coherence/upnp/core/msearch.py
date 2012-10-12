@@ -1,8 +1,10 @@
-# Licensed under the MIT license
-# http://opensource.org/licenses/mit-license.php
-#
-# Copyright (C) 2006 Fluendo, S.A. (www.fluendo.com).
-# Copyright 2006, Frank Scholz <coherence@beebits.net>
+"""
+Licensed under the MIT license
+http://opensource.org/licenses/mit-license.php
+
+Copyright (C) 2006 Fluendo, S.A. (www.fluendo.com).
+Copyright 2006, Frank Scholz <coherence@beebits.net>
+"""
 
 import socket
 import time
@@ -23,11 +25,10 @@ from coherence import log
 class MSearch(DatagramProtocol, log.Loggable):
     logCategory = 'msearch'
 
-    def __init__(self, ssdp_server, test=False):
+    def __init__(self, ssdp_server, test = False):
         self.ssdp_server = ssdp_server
         if test == False:
             self.port = reactor.listenUDP(0, self)
-
             self.double_discover_loop = task.LoopingCall(self.double_discover)
             self.double_discover_loop.start(120.0)
 
@@ -43,7 +44,7 @@ class MSearch(DatagramProtocol, log.Loggable):
                                             headers['location'],
                                             headers['server'],
                                             headers['cache-control'],
-                                            host=host)
+                                            host = host)
             else:
                 self.ssdp_server.known[headers['usn']]['last-seen'] = time.time()
                 self.debug('updating last-seen for %r' % headers['usn'])
@@ -64,7 +65,7 @@ class MSearch(DatagramProtocol, log.Loggable):
                 'MAN: "ssdp:discover"',
                 'MX: 5',
                 'ST: ssdp:all',
-                '','']
+                '', '']
         req = '\r\n'.join(req)
 
         try:

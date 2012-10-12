@@ -2,7 +2,6 @@
 
 from coherence import __version__
 import sys
-
 try:
     from setuptools import setup, find_packages
     packages = find_packages()
@@ -10,37 +9,33 @@ try:
 except:
     setuptools = None
     from distutils.core import setup
-
     import os
-
-    packages = ['coherence',]
-
+    packages = ['coherence', ]
     def find_packages(path):
         for f in os.listdir(path):
             if f[0] == '.':
                 continue
-            if os.path.isdir(os.path.join(path,f)) == True:
-                next_path = os.path.join(path,f)
+            if os.path.isdir(os.path.join(path, f)) == True:
+                next_path = os.path.join(path, f)
                 if '__init__.py' in os.listdir(next_path):
-                    packages.append(next_path.replace(os.sep,'.'))
+                    packages.append(next_path.replace(os.sep, '.'))
                 find_packages(next_path)
-
     find_packages('coherence')
-
 packages.append('misc')
-
 from distutils.core import Command
 from distutils import log
 import os
 
 class build_docs(Command):
     description = "build documentation from rst-files"
-    user_options=[]
+    user_options = []
 
-    def initialize_options (self): pass
+    def initialize_options (self):
+        pass
+
     def finalize_options (self):
         self.docpages = DOCPAGES
-        
+
     def run(self):
         substitutions = ('.. |VERSION| replace:: '
                          + self.distribution.get_version())
@@ -55,9 +50,9 @@ class build_docs(Command):
                 rsttext = '\n'.join((substitutions, rsttext))
                 # docutils.core does not offer easy reading from a
                 # string into a file, so we need to do it ourself :-(
-                doc = docutils.core.publish_string(source=rsttext,
-                                                   source_path=rstfilename,
-                                                   writer_name=writer)
+                doc = docutils.core.publish_string(source = rsttext,
+                                                   source_path = rstfilename,
+                                                   writer_name = writer)
                 try:
                     rsttext = open(outfilename, 'w').write(doc)
                 except IOError, e:
@@ -138,7 +133,7 @@ Kudos go to:
     'author_email':'dev@coherence-project.org',
     'license' : "MIT",
     'packages':packages,
-    'scripts' : ['bin/coherence','misc/Desktop-Applet/applet-coherence'],
+    'scripts' : ['bin/coherence', 'misc/Desktop-Applet/applet-coherence'],
     'url' : "http://coherence-project.org",
     'download_url' : 'http://coherence-project.org/download/Coherence-%s.tar.gz' % __version__,
     'keywords':['UPnP', 'DLNA', 'multimedia', 'gstreamer'],
@@ -152,7 +147,7 @@ Kudos go to:
     'package_data' : {
         'coherence': ['upnp/core/xml-service-descriptions/*.xml',
                       'ui/icons/*.png',
-                      'web/static/*.css','web/static/*.js'],
+                      'web/static/*.css', 'web/static/*.js'],
         'misc': ['Desktop-Applet/*.png',
                  'device-icons/*.png'],
     },
@@ -162,7 +157,7 @@ if setuptools:
     setup_args['install_requires'] = [
         'ConfigObj >= 4.3'
         ]
-    if sys.platform in ('win32','sunos5'):
+    if sys.platform in ('Xwin32', 'sunos5'):
         setup_args['install_requires'].append('Netifaces >= 0.4')
 
     setup_args['entry_points'] = """
@@ -195,7 +190,7 @@ if setuptools:
         FeedStore = coherence.backends.feed_storage:FeedStore
         RadiotimeStore = coherence.backends.radiotime_storage:RadiotimeStore
         AudioCDStore = coherence.backends.audiocd_storage:AudioCDStore
-        
+
         [coherence.plugins.backend.media_renderer]
         ElisaPlayer = coherence.backends.elisa_renderer:ElisaPlayer
         GStreamerPlayer = coherence.backends.gstreamer_renderer:GStreamerPlayer
@@ -209,4 +204,4 @@ if setuptools:
     """
 
 
-setup(cmdclass=cmdclass, **setup_args)
+setup(cmdclass = cmdclass, **setup_args)

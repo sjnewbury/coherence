@@ -1,4 +1,6 @@
-
+"""
+Replacement for louie.
+"""
 from twisted.internet import defer
 
 class Receiver(object):
@@ -10,7 +12,6 @@ class Receiver(object):
 
     def __call__(self, *args, **kwargs):
         args = args + self.arguments
-
         kw = self.keywords.copy()
         if kwargs:
             kw.update(kwargs)
@@ -115,7 +116,7 @@ class SignalingProperty(object):
     (means old_value != new_value).
     """
 
-    def __init__(self, signal, var_name=None, default=None):
+    def __init__(self, signal, var_name = None, default = None):
         self.signal = signal
 
         if var_name is None:
@@ -125,7 +126,7 @@ class SignalingProperty(object):
 
         self.default = default
 
-    def __get__(self, obj, objtype=None):
+    def __get__(self, obj, objtype = None):
         return getattr(obj, self.var_name, self.default)
 
     def __set__(self, obj, value):
@@ -153,7 +154,7 @@ class CustomSignalingProperty(object):
     build in property-decorator.
     """
 
-    def __init__(self, signal, fget, fset, fdel=None, doc=None):
+    def __init__(self, signal, fget, fset, fdel = None, doc = None):
         """
         fdel is there for API compability only. As there is no good way to
         signal a deletion it is not implemented at all.

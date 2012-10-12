@@ -1,13 +1,13 @@
+"""
 # Licensed under the MIT license
 # http://opensource.org/licenses/mit-license.php
 
 # Copyright 2008, Frank Scholz <coherence@beebits.net>
+"""
 
 from coherence.upnp.services.clients.switch_power_client import SwitchPowerClient
 from coherence.upnp.services.clients.dimming_client import DimmingClient
-
 from coherence import log
-
 import coherence.extern.louie as louie
 
 class DimmableLightClient(log.Loggable):
@@ -20,17 +20,13 @@ class DimmableLightClient(log.Loggable):
         self.icons = device.icons
         self.switch_power = None
         self.dimming = None
-
         self.detection_completed = False
-
-        louie.connect(self.service_notified, signal='Coherence.UPnP.DeviceClient.Service.notified', sender=self.device)
-
+        louie.connect(self.service_notified, signal = 'Coherence.UPnP.DeviceClient.Service.notified', sender = self.device)
         for service in self.device.get_services():
             if service.get_type() in ["urn:schemas-upnp-org:service:SwitchPower:1"]:
                 self.switch_power = SwitchPowerClient(service)
             if service.get_type() in ["urn:schemas-upnp-org:service:Dimming:1"]:
                 self.dimming = DimmingClient(service)
-
         self.info("DimmingLight %s" % (self.device.get_friendly_name()))
         if self.switch_power:
             self.info("SwitchPower service available")
@@ -64,8 +60,7 @@ class DimmableLightClient(log.Loggable):
             if self.dimming.service.last_time_updated == None:
                 return
         self.detection_completed = True
-        louie.send('Coherence.UPnP.DeviceClient.detection_completed', None,
-                               client=self,udn=self.device.udn)
+        louie.send('Coherence.UPnP.DeviceClient.detection_completed', None, client = self, udn = self.device.udn)
 
-    def state_variable_change( self, variable):
+    def state_variable_change(self, variable):
         self.info(variable.name, 'changed from', variable.old_value, 'to', variable.value)

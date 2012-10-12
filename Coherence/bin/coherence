@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/python
 #
 # Licensed under the MIT license
 # http://opensource.org/licenses/mit-license.php
@@ -18,7 +18,7 @@ import string
 
 from coherence import __version__
 
-from coherence.extern.simple_config import Config,ConfigItem
+from coherence.extern.simple_config import Config, ConfigItem
 
 """
  thankfully taken from twisted.scripts._twistd_unix.py
@@ -31,7 +31,7 @@ def daemonize():
     if os.fork():   # launch child and...
         os._exit(0) # kill off parent again.
     os.umask(077)
-    null=os.open('/dev/null', os.O_RDWR)
+    null = os.open('/dev/null', os.O_RDWR)
     for i in range(3):
         try:
             os.dup2(null, i)
@@ -47,8 +47,7 @@ def setConfigFile():
         except:
             configDir = os.getcwd()
         return configDir
-
-    return os.path.join( findConfigDir(), '.coherence')
+    return os.path.join(findConfigDir(), '.coherence')
 
 def __opt_option(option, opt, value, parser):
     try:
@@ -60,25 +59,24 @@ def __opt_option(option, opt, value, parser):
 
 
 def main(config):
-
     from coherence.base import Coherence
     c = Coherence(config)
     #c = Coherence(plugins={'FSStore': {'content_directory':'tests/content'},
     #                       'Player': {})
     #c.add_plugin('FSStore', content_directory='tests/content', version=1)
 
-
-                   
-
 if __name__ == '__main__':
-    
     import optparse
+    from twisted.internet import reactor
+    import traceback
+    from coherence.extern.simple_config import Config
+
     class OptionParser(optparse.OptionParser):
         """
         Simple wrapper to add list of available plugins to help
         message, but only if help message is really printed
         """
-        def print_help(self, file=None):
+        def print_help(self, file = None):
             from coherence.base import Plugins
             # hack: avoid plugins are displaying there help message
             sys.argv = sys.argv[:1]
@@ -87,46 +85,30 @@ if __name__ == '__main__':
             self.epilog = 'Available backends are: %s' % ', '.join(p)
             optparse.OptionParser.print_help(self, file)
 
-
-    parser = OptionParser('%prog [options]',
-                          version="Coherence version: %s" % __version__)
-    parser.add_option('-d', '--daemon', action='store_true',
-                      help='daemonize')
-    parser.add_option('--noconfig', action='store_false', dest='configfile',
-                      help='ignore any configfile found')
-    parser.add_option('-c', '--configfile', default=setConfigFile(),
-                      help='configfile to use, default: %default')
-    parser.add_option('-l', '--logfile', help='logfile to use')
-    parser.add_option('-o', '--option', action='callback',
-                      dest='options', metavar='NAME:VALUE',
-                      default={}, callback=__opt_option, type='string',
-                      help="activate option (name and value separated by a "
-                           "colon (`:`), may be given multiple times)")
-    parser.add_option('-p', '--plugins', action='append',
-                      help='activate plugins (may be given multiple times) '
-                           'Example: --plugin=backend:FSStore,name:MyCoherence')
-
+    parser = OptionParser('%prog [options]', version = "Coherence version: %s" % __version__)
+    parser.add_option('-d', '--daemon', action = 'store_true', help = 'daemonize')
+    parser.add_option('--noconfig', action = 'store_false', dest = 'configfile', help = 'ignore any configfile found')
+    parser.add_option('-c', '--configfile', default = setConfigFile(), help = 'configfile to use, default: %default')
+    parser.add_option('-l', '--logfile', help = 'logfile to use')
+    parser.add_option('-o', '--option', action = 'callback', dest = 'options', metavar = 'NAME:VALUE', default = {}, callback = __opt_option, type = 'string',
+                      help = "activate option (name and value separated by a colon (`:`), may be given multiple times)")
+    parser.add_option('-p', '--plugins', action = 'append',
+                      help = 'activate plugins (may be given multiple times) Example: --plugin=backend:FSStore,name:MyCoherence')
     options, args = parser.parse_args()
     if args:
         parser.error('takes no arguments')
-
     if options.daemon:
         try:
             daemonize()
         except:
             print traceback.format_exc()
-
     config = {}
     config['logging'] = {}
-
-
     if options.configfile:
         try:
-            config = Config(options.configfile, root='config',
-                            element2attr_mappings={'active':'active'}).config
+            config = Config(options.configfile, root = 'config', element2attr_mappings = {'active':'active'}).config
         except SyntaxError:
-            import traceback
-            #print traceback.format_exc()
+            print traceback.format_exc()
             try:
                 from configobj import ConfigObj
                 config = ConfigObj(options.configfile)
@@ -136,8 +118,6 @@ if __name__ == '__main__':
         except IOError:
             print "Config file %r not found, ignoring" % options.configfile
             pass
-
-
     if options.logfile:
         if isinstance(config, (ConfigItem, dict)):
             if 'logging' not in config:
@@ -145,13 +125,11 @@ if __name__ == '__main__':
             config['logging']['logfile'] = options.logfile
         else:
             config['logfile'] = options.logfile
-
     # copy options passed by -o/--option into config
     for k, v in options.options.items():
         if k == 'logfile':
             continue
         config[k] = v
-
     if options.daemon:
         if isinstance(config, (ConfigItem, dict)):
             if not config.get('logging', None):
@@ -164,12 +142,11 @@ if __name__ == '__main__':
                     pass
         else:
             if not config.get('logfile', None):
-                config.set('logmode','none')
+                config.set('logmode', 'none')
                 try:
                     del config['logfile']
                 except KeyError:
                     pass
-
     use_qt = config.get('qt', 'no') == 'yes'
     if (config.get('use_dbus', 'no') == 'yes' or
         config.get('glib', 'no') == 'yes' or
@@ -184,7 +161,6 @@ if __name__ == '__main__':
                 glib2reactor.install()
             except AssertionError:
                 print "error installing glib2reactor"
-
     if options.plugins:
         plugins = config.get('plugin')
         if isinstance(plugins, dict):
@@ -194,17 +170,16 @@ if __name__ == '__main__':
         if not plugins:
             config['plugin'] = []
             plugins = config['plugin']
-
         while len(options.plugins) > 0:
             p = options.plugins.pop()
             plugin = {}
             plugin_conf = p.split(',')
             for pair in plugin_conf:
-                pair = pair.split(':',1)
+                pair = pair.split(':', 1)
                 if len(pair) == 2:
                     pair[0] = pair[0].strip()
                     if pair[0] in plugin:
-                        if not isinstance(plugin[pair[0]],list):
+                        if not isinstance(plugin[pair[0]], list):
                             new_list = [plugin[pair[0]]]
                             plugin[pair[0]] = new_list
                         plugin[pair[0]].append(pair[1])
@@ -214,9 +189,5 @@ if __name__ == '__main__':
                 plugins.append(plugin)
             except AttributeError:
                 print "mixing commandline plugins and configfile does not work with the old config file format"
-
-
-    from twisted.internet import reactor
-
     reactor.callWhenRunning(main, config)
     reactor.run()
