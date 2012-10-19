@@ -4,40 +4,33 @@
 # Copyright (C) 2006 Fluendo, S.A. (www.fluendo.com).
 # Copyright 2006, Frank Scholz <coherence@beebits.net>
 
-from os.path import abspath
 import urlparse
 from urlparse import urlsplit
-
 from coherence.extern.et import parse_xml as et_parse_xml
-
 from coherence import SERVER_ID
-
-
-from twisted.web import server, http, static
+from twisted.web import http, static
 from twisted.web import client, error
-from twisted.web import proxy, resource, server
-from twisted.internet import reactor,protocol,defer,abstract
+from twisted.web import proxy, resource
+from twisted.web import server
+from twisted.internet import reactor, protocol, defer, abstract
 from twisted.python import failure
-
-from twisted.python.util import InsensitiveDict
-
-
 try:
     from twisted.protocols._c_urlarg import unquote
 except ImportError:
     from urllib import unquote
-
 try:
     import netifaces
     have_netifaces = True
 except ImportError:
     have_netifaces = False
+#from os.path import abspath
+#from twisted.python.util import InsensitiveDict
 
 
 def means_true(value):
-    if isinstance(value,basestring):
+    if isinstance(value, basestring):
         value = value.lower()
-    return value in [True,1,'1','true','yes','ok']
+    return value in [True, 1, '1', 'true', 'yes', 'ok']
 
 def generalise_boolean(value):
     """ standardize the different boolean incarnations
@@ -52,24 +45,20 @@ def generalise_boolean(value):
 generalize_boolean = generalise_boolean
 
 
-def parse_xml(data, encoding="utf-8"):
-    return et_parse_xml(data,encoding)
+def parse_xml(data, encoding = "utf-8"):
+    return et_parse_xml(data, encoding)
 
 def parse_http_response(data):
 
     """ don't try to get the body, there are reponses without """
     header = data.split('\r\n\r\n')[0]
-
     lines = header.split('\r\n')
     cmd = lines[0].split(' ')
     lines = map(lambda x: x.replace(': ', ':', 1), lines[1:])
     lines = filter(lambda x: len(x) > 0, lines)
-
     headers = [x.split(':', 1) for x in lines]
     headers = dict(map(lambda x: (x[0].lower(), x[1]), headers))
-
     return cmd, headers
-
 
 def get_ip_address(ifname):
     """
@@ -90,7 +79,6 @@ def get_ip_address(ifname):
 
     Thx Lawrence for that patch!
     """
-
     if have_netifaces:
         if ifname in netifaces.interfaces():
             iface = netifaces.ifaddresses(ifname)
@@ -98,21 +86,17 @@ def get_ip_address(ifname):
             # we now have a list of address dictionaries, there may be multiple addresses bound
             return ifaceadr[0]['addr']
     import sys
-    if sys.platform in ('win32','sunos5'):
+    if sys.platform in ('win32', 'sunos5'):
         return '127.0.0.1'
-
     from os import uname
     import socket
     import fcntl
     import struct
-
     system_type = uname()[0]
-
     if system_type == "Linux":
         SIOCGIFADDR = 0x8915
     else:
         SIOCGIFADDR = 0xc0206921
-
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         return socket.inet_ntoa(fcntl.ioctl(
@@ -123,13 +107,11 @@ def get_ip_address(ifname):
     except:
         return '127.0.0.1'
 
-
 def get_host_address():
     """ try to get determine the interface used for
         the default route, as this is most likely
         the interface we should bind to (on a single homed host!)
     """
-
     import sys
     if sys.platform == 'win32':
         if have_netifaces:
@@ -149,19 +131,19 @@ def get_host_address():
                         if l[1] == '00000000': #default route...
                             route.close()
                             return get_ip_address(l[0])
-        except IOError, msg:
+        except IOError, _msg:
             """ fallback to parsing the output of netstat """
             from twisted.internet import utils
 
             def result(r):
                 from os import uname
-                (osname,_, _, _,_) = uname()
+                (osname, _, _, _, _) = uname()
                 osname = osname.lower()
                 lines = r.split('\n')
                 for l in lines:
                     l = l.strip(' \r\n')
                     parts = [x.strip() for x in l.split(' ') if len(x) > 0]
-                    if parts[0] in ('0.0.0.0','default'):
+                    if parts[0] in ('0.0.0.0', 'default'):
                         if osname[:6] == 'darwin':
                             return get_ip_address(parts[5])
                         else:
@@ -175,7 +157,7 @@ def get_host_address():
             d.addCallback(result)
             d.addErrback(fail)
             return d
-        except Exception, msg:
+        except Exception, _msg:
             import traceback
             traceback.print_exc()
 
@@ -183,7 +165,6 @@ def get_host_address():
     return '127.0.0.1'
 
 def de_chunk_payload(response):
-
     try:
         import cStringIO as StringIO
     except ImportError:
@@ -197,50 +178,41 @@ def de_chunk_payload(response):
     def read_chunk_length():
         line = response.readline()
         try:
-            len = int(line.strip(),16)
+            l_len = int(line.strip(), 16)
         except ValueError:
-            len = 0
-        return len
+            l_len = 0
+        return l_len
 
-    len = read_chunk_length()
-    while (len > 0):
-        newresponse.write(response.read(len))
-        line = response.readline() # after chunk and before next chunk length
-        len = read_chunk_length()
-
+    l_len = read_chunk_length()
+    while (l_len > 0):
+        newresponse.write(response.read(l_len))
+        _line = response.readline() # after chunk and before next chunk length
+        l_len = read_chunk_length()
     return newresponse.getvalue()
 
 class Request(server.Request):
 
-
     def process(self):
         "Process a request."
-
         # get site from channel
         self.site = self.channel.site
-
         # set various default headers
         self.setHeader('server', SERVER_ID)
         self.setHeader('date', http.datetimeToString())
         self.setHeader('content-type', "text/html")
-
         # Resource Identification
         url = self.path
-
         #remove trailing "/", if ever
         url = url.rstrip('/')
-
-        scheme, netloc, path, query, fragment = urlsplit(url)
+        _scheme, _netloc, path, _query, _fragment = urlsplit(url)
         self.prepath = []
         if path == "":
             self.postpath = []
         else:
             self.postpath = map(unquote, path[1:].split('/'))
-
         try:
             def deferred_rendering(r):
                 self.render(r)
-
             resrc = self.site.getResourceFor(self)
             if resrc is None:
                 self.setResponseCode(http.NOT_FOUND, "Error: No resource for path %s" % path)
@@ -250,19 +222,17 @@ class Request(server.Request):
                 resrc.addErrback(self.processingFailed)
             else:
                 self.render(resrc)
-
         except:
             self.processingFailed(failure.Failure())
 
 
 class Site(server.Site):
-
     noisy = False
     requestFactory = Request
 
     def startFactory(self):
-        pass
         #http._logDateTimeStart()
+        pass
 
 
 class ProxyClient(http.HTTPClient):
@@ -294,7 +264,6 @@ class ProxyClient(http.HTTPClient):
             # Add a whitespace to message, this allows empty messages
             # transparently
             message = " %s" % (message,)
-
         if version == 'ICY':
             version = 'HTTP/1.1'
         #print "ProxyClient handleStatus", version, code, message
@@ -315,10 +284,10 @@ class ProxyClient(http.HTTPClient):
         ##self.father.transport.write("%s: %s\r\n" % ( 'Server', 'Apache/2.0.52 (Red Hat)'))
         self.father.transport.write("\r\n")
 
-    def handleResponsePart(self, buffer):
-        #print "ProxyClient handleResponsePart", len(buffer), self.father.chunked
-        self.send_data += len(buffer)
-        self.father.write(buffer)
+    def handleResponsePart(self, p_buffer):
+        #print "ProxyClient handleResponsePart", len(p_buffer), self.father.chunked
+        self.send_data += len(p_buffer)
+        self.father.write(p_buffer)
 
     def handleResponseEnd(self):
         #print "handleResponseEnd", self.send_data
@@ -330,9 +299,7 @@ class ProxyClientFactory(protocol.ClientFactory):
     """
     Used by ProxyRequest to implement a simple web proxy.
     """
-
     protocol = proxy.ProxyClient
-
 
     def __init__(self, command, rest, version, headers, data, father):
         self.father = father
@@ -342,11 +309,8 @@ class ProxyClientFactory(protocol.ClientFactory):
         self.data = data
         self.version = version
 
-
     def buildProtocol(self, addr):
-        return self.protocol(self.command, self.rest, self.version,
-                             self.headers, self.data, self.father)
-
+        return self.protocol(self.command, self.rest, self.version, self.headers, self.data, self.father)
 
     def clientConnectionFailed(self, connector, reason):
         self.father.transport.write("HTTP/1.0 501 Gateway error\r\n")
@@ -370,10 +334,9 @@ class ReverseProxyResource(proxy.ReverseProxyResource):
     @ivar reactor: the reactor used to create connections.
     @type reactor: object providing L{twisted.internet.interfaces.IReactorTCP}
     """
-
     proxyClientFactoryClass = ProxyClientFactory
 
-    def __init__(self, host, port, path, reactor=reactor):
+    def __init__(self, host, port, path, reactor = reactor):
         """
         @param host: the host of the web server to proxy.
         @type host: C{str}
@@ -422,26 +385,26 @@ class ReverseProxyResource(proxy.ReverseProxyResource):
         self.reactor.connectTCP(self.host, self.port, clientFactory)
         return server.NOT_DONE_YET
 
-    def resetTarget(self,host,port,path,qs=''):
+    def resetTarget(self, host, port, path, qs = ''):
         self.host = host
         self.port = port
         self.path = path
         self.qs = qs
 
-class ReverseProxyUriResource(ReverseProxyResource):
 
+class ReverseProxyUriResource(ReverseProxyResource):
     uri = None
 
-    def __init__(self, uri, reactor=reactor):
+    def __init__(self, uri, reactor = reactor):
         self.uri = uri
-        _,host_port,path,params,_ = urlsplit(uri)
+        _, host_port, path, params, _ = urlsplit(uri)
         if host_port.find(':') != -1:
-            host,port = tuple(host_port.split(':'))
+            host, port = tuple(host_port.split(':'))
             port = int(port)
         else:
             host = host_port
             port = 80
-        if path =='':
+        if path == '':
             path = '/'
         if params == '':
             rest = path
@@ -451,9 +414,9 @@ class ReverseProxyUriResource(ReverseProxyResource):
 
     def resetUri (self, uri):
         self.uri = uri
-        _,host_port,path,params,_ =  urlsplit(uri)
+        _, host_port, path, params, _ = urlsplit(uri)
         if host_port.find(':') != -1:
-            host,port = tuple(host_port.split(':'))
+            host, port = tuple(host_port.split(':'))
             port = int(port)
         else:
             host = host_port
@@ -462,7 +425,6 @@ class ReverseProxyUriResource(ReverseProxyResource):
 
 
 class myHTTPPageGetter(client.HTTPPageGetter):
-
     followRedirect = True
 
     def connectionMade(self):
@@ -472,7 +434,7 @@ class myHTTPPageGetter(client.HTTPPageGetter):
         self.sendHeader('Host', self.factory.headers.get("host", self.factory.host))
         self.sendHeader('User-Agent', self.factory.agent)
         if self.factory.cookies:
-            l=[]
+            l = []
             for cookie, cookval in self.factory.cookies.items():
                 l.append('%s=%s' % (cookie, cookval))
             self.sendHeader('Cookie', '; '.join(l))
@@ -485,7 +447,6 @@ class myHTTPPageGetter(client.HTTPPageGetter):
                 self.sendHeader(key, value)
         self.endHeaders()
         self.headers = {}
-
         if data is not None:
             self.transport.write(data)
 
@@ -514,7 +475,6 @@ class myHTTPPageGetter(client.HTTPPageGetter):
 
 
 class HeaderAwareHTTPClientFactory(client.HTTPClientFactory):
-
     protocol = myHTTPPageGetter
     noisy = False
 
@@ -538,14 +498,13 @@ class HeaderAwareHTTPDownloader(client.HTTPDownloader):
                 # server doesn't support partial requests, oh well
                 self.requestedPartial = 0
                 return
-            start, end, realLength = http.parseContentRange(contentRange[0])
+            start, _end, _realLength = http.parseContentRange(contentRange[0])
             if start != self.requestedPartial:
                 # server is acting wierdly
                 self.requestedPartial = 0
 
 
-
-def getPage(url, contextFactory=None, *args, **kwargs):
+def getPage(url, contextFactory = None, *args, **kwargs):
     """
     Download a web page as a string.
 
@@ -558,19 +517,18 @@ def getPage(url, contextFactory=None, *args, **kwargs):
     return client._makeGetterFactory(
         url,
         HeaderAwareHTTPClientFactory,
-        contextFactory=contextFactory,
+        contextFactory = contextFactory,
         *args, **kwargs).deferred
 
-
-def downloadPage(url, file, contextFactory=None, *args, **kwargs):
+def downloadPage(url, p_file, contextFactory = None, *args, **kwargs):
     """Download a web page to a file.
 
     @param file: path to file on filesystem, or file-like object.
 
     See HTTPDownloader to see what extra args can be passed.
     """
-    scheme, host, port, path = client._parse(url)
-    factory = HeaderAwareHTTPDownloader(url, file, *args, **kwargs)
+    scheme, host, port, _path = client._parse(url)
+    factory = HeaderAwareHTTPDownloader(url, p_file, *args, **kwargs)
     factory.noisy = False
     if scheme == 'https':
         from twisted.internet import ssl
@@ -589,40 +547,32 @@ class StaticFile(static.File):
     """
 
     # BEGIN patch for #266
-    def __init__(self, path, defaultType="text/html", ignoredExts=(), registry=None, allowExt=0):
-        static.File.__init__(self, unquote(path), defaultType=defaultType, ignoredExts=ignoredExts, registry=registry, allowExt=allowExt) # added for #
+    def __init__(self, path, defaultType = "text/html", ignoredExts = (), registry = None, allowExt = 0):
+        static.File.__init__(self, unquote(path), defaultType = defaultType, ignoredExts = ignoredExts, registry = registry, allowExt = allowExt) # added for #
     # END patch for #266
 
     def render(self, request):
         #print ""
         #print "StaticFile", request
         #print "StaticFile in", request.received_headers
-
         """You know what you doing."""
         self.restat()
-
         if self.type is None:
             self.type, self.encoding = static.getTypeAndEncoding(self.basename(),
                                                           self.contentTypes,
                                                           self.contentEncodings,
                                                           self.defaultType)
-
         if not self.exists():
             return self.childNotFound.render(request)
-
         if self.isdir():
             return self.redirect(request)
-
         #for content-length
         fsize = size = self.getFileSize()
-
-        request.setHeader('accept-ranges','bytes')
-
+        request.setHeader('accept-ranges', 'bytes')
         if self.type:
             request.setHeader('content-type', self.type)
         if self.encoding:
             request.setHeader('content-encoding', self.encoding)
-
         try:
             f = self.openForReading()
         except IOError, e:
@@ -634,15 +584,13 @@ class StaticFile(static.File):
         if request.setLastModified(self.getmtime()) is http.CACHED:
             return ''
         trans = True
-
-        range = request.getHeader('range')
+        l_range = request.getHeader('range')
         #print "StaticFile", range
-
         tsize = size
-        if range is not None:
+        if l_range is not None:
             # This is a request for partial data...
-            bytesrange = range.split('=')
-            assert bytesrange[0] == 'bytes',\
+            bytesrange = l_range.split('=')
+            assert bytesrange[0] == 'bytes', \
                    "Syntactically invalid http range header!"
             start, end = bytesrange[1].split('-', 1)
             if start:
@@ -664,33 +612,29 @@ class StaticFile(static.File):
             # start is the byte offset to begin, and end is the byte offset
             # to end..  fsize is size to send, tsize is the real size of
             # the file, and size is the byte position to stop sending.
-
             if fsize <= 0:
                 request.setResponseCode(http.REQUESTED_RANGE_NOT_SATISFIABLE)
                 fsize = tsize
                 trans = False
             else:
                 request.setResponseCode(http.PARTIAL_CONTENT)
-                request.setHeader('content-range',"bytes %s-%s/%s " % (
+                request.setHeader('content-range', "bytes %s-%s/%s " % (
                     str(start), str(end), str(tsize)))
                 #print "StaticFile", start, end, tsize
-
         request.setHeader('content-length', str(fsize))
-
         if request.method == 'HEAD' or trans == False:
             # pretend we're a HEAD request, so content-length
             # won't be overwritten.
             #print "HEAD request"
             request.method = 'HEAD'
             return ''
-
         #print "StaticFile out", request.headers, request.code
-
         # return data
         # size is the byte position to stop sending, not how many bytes to send
         static.FileTransfer(f, size, request)
         # and make sure the connection doesn't get closed
         return server.NOT_DONE_YET
+
 
 class BufferFile(static.File):
     """ taken from twisted.web.static and modified
@@ -698,7 +642,7 @@ class BufferFile(static.File):
         http://resnet.uoregon.edu/~gurney_j/jmpc/dist/twisted.web.static.patch
     """
 
-    def __init__(self, path, target_size=0, *args):
+    def __init__(self, path, target_size = 0, *args):
         static.File.__init__(self, path, *args)
         self.target_size = target_size
         self.upnp_retry = None
@@ -706,12 +650,10 @@ class BufferFile(static.File):
     def render(self, request):
         #print ""
         #print "BufferFile", request
-
-        # FIXME detect when request is REALLY finished
+        # FIXME: detect when request is REALLY finished
         if request is None or request.finished :
             print "No request to render!"
             return ''
-
         """You know what you doing."""
         self.restat()
 
@@ -720,29 +662,23 @@ class BufferFile(static.File):
                                                           self.contentTypes,
                                                           self.contentEncodings,
                                                           self.defaultType)
-
         if not self.exists():
             return self.childNotFound.render(request)
-
         if self.isdir():
             return self.redirect(request)
-
         #for content-length
         if (self.target_size > 0):
             fsize = size = int(self.target_size)
         else:
             fsize = size = int(self.getFileSize())
-
         #print fsize
 
         if size == int(self.getFileSize()):
-            request.setHeader('accept-ranges','bytes')
-
+            request.setHeader('accept-ranges', 'bytes')
         if self.type:
             request.setHeader('content-type', self.type)
         if self.encoding:
             request.setHeader('content-encoding', self.encoding)
-
         try:
             f = self.openForReading()
         except IOError, e:
@@ -754,15 +690,13 @@ class BufferFile(static.File):
         if request.setLastModified(self.getmtime()) is http.CACHED:
             return ''
         trans = True
-
-        range = request.getHeader('range')
-        #print "StaticFile", range
-
+        l_range = request.getHeader('range')
+        #print "StaticFile", l_range
         tsize = size
-        if range is not None:
+        if l_range is not None:
             # This is a request for partial data...
-            bytesrange = range.split('=')
-            assert bytesrange[0] == 'bytes',\
+            bytesrange = l_range.split('=')
+            assert bytesrange[0] == 'bytes', \
                    "Syntactically invalid http range header!"
             start, end = bytesrange[1].split('-', 1)
             if start:
@@ -774,7 +708,6 @@ class BufferFile(static.File):
                     print "Requesting data beyond current scope -> postpone rendering!"
                     self.upnp_retry = reactor.callLater(1.0, self.render, request)
                     return server.NOT_DONE_YET
-
                 f.seek(start)
                 if end:
                     #print ":%s" % end
@@ -800,25 +733,20 @@ class BufferFile(static.File):
                 trans = False
             else:
                 request.setResponseCode(http.PARTIAL_CONTENT)
-                request.setHeader('content-range',"bytes %s-%s/%s " % (
+                request.setHeader('content-range', "bytes %s-%s/%s " % (
                     str(start), str(end), str(tsize)))
                 #print "StaticFile", start, end, tsize
-
         request.setHeader('content-length', str(fsize))
-
         if request.method == 'HEAD' or trans == False:
             # pretend we're a HEAD request, so content-length
             # won't be overwritten.
             request.method = 'HEAD'
             return ''
-
         #print "StaticFile out", request.headers, request.code
-
         # return data
         # size is the byte position to stop sending, not how many bytes to send
-
         BufferFileTransfer(f, size - f.tell(), request)
-		# and make sure the connection doesn't get closed
+        # and make sure the connection doesn't get closed
         return server.NOT_DONE_YET
 
 
@@ -828,8 +756,8 @@ class BufferFileTransfer(object):
     """
     request = None
 
-    def __init__(self, file, size, request):
-        self.file = file
+    def __init__(self, p_file, size, request):
+        self.file = p_file
         self.size = size
         self.request = request
         self.written = self.file.tell()
@@ -867,7 +795,7 @@ import random
 class CET(tzinfo):
 
     def __init__(self):
-        self.__offset = timedelta(minutes=60)
+        self.__offset = timedelta(minutes = 60)
         self.__name = 'CET'
 
     def utcoffset(self, dt):
@@ -876,14 +804,16 @@ class CET(tzinfo):
     def tzname(self, dt):
         return self.__name
 
-    def dst(self,dt):
+    def dst(self, dt):
         return timedelta(0)
 
 
 class CEST(tzinfo):
+    """Central Europe Summer Time
+    """
 
     def __init__(self):
-        self.__offset = timedelta(minutes=120)
+        self.__offset = timedelta(minutes = 120)
         self.__name = 'CEST'
 
     def utcoffset(self, dt):
@@ -892,14 +822,14 @@ class CEST(tzinfo):
     def tzname(self, dt):
         return self.__name
 
-    def dst(self,dt):
+    def dst(self, dt):
         return timedelta(0)
 
 
-bdates = [ datetime(1997,2,28,17,20,tzinfo=CET()),   # Sebastian Oliver
-           datetime(1999,9,19,4,12,tzinfo=CEST()),   # Patrick Niklas
-           datetime(2000,9,23,4,8,tzinfo=CEST()),    # Saskia Alexa
-           datetime(2003,7,23,1,18,tzinfo=CEST()),   # Mara Sophie
+bdates = [ datetime(1997, 2, 28, 17, 20, tzinfo = CET()), # Sebastian Oliver
+           datetime(1999, 9, 19, 4, 12, tzinfo = CEST()), # Patrick Niklas
+           datetime(2000, 9, 23, 4, 8, tzinfo = CEST()), # Saskia Alexa
+           datetime(2003, 7, 23, 1, 18, tzinfo = CEST()), # Mara Sophie
                                                      # you are the best!
          ]
 

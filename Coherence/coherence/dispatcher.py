@@ -1,9 +1,21 @@
 """
+dispatcher
+
 Replacement for louie.
 """
 from twisted.internet import defer
+from twisted.internet import reactor
+
+callLater = reactor.callLater
+
+
+class UnknownSignal(Exception): pass
+"""Error - unknown signal.
+"""
+
 
 class Receiver(object):
+
     def __init__(self, signal, callback, args, kwargs):
         self.signal = signal
         self.callback = callback
@@ -29,9 +41,11 @@ class Receiver(object):
                         )
                 )
 
-class UnknownSignal(Exception): pass
-
 class Dispatcher(object):
+    """
+
+    keep a dict of receivers (indexed by signal) with a list of targets for that signal
+    """
 
     __signals__ = {}
 
@@ -41,6 +55,7 @@ class Dispatcher(object):
             self.receivers[signal] = []
 
     def connect(self, signal, callback, *args, **kw):
+        #print " Connect #2 (dispatcher) Signal:{0:}, Callback:{1:}, Args:{2:}, Kwrgs:{3:};".format(signal, callback, args, kw)
         receiver = Receiver(signal, callback, args, kw)
         try:
             self.receivers[signal].append(receiver)
@@ -49,9 +64,9 @@ class Dispatcher(object):
         return receiver
 
     def disconnect(self, receiver):
+        print "dispatcher.disconnect - Receiver:{0:}".format(receiver)
         if not receiver:
             return
-
         try:
             self.receivers[receiver.signal].remove(receiver)
         except KeyError:
@@ -70,7 +85,6 @@ class Dispatcher(object):
                 results.append((receiver, receiver(*args, **kwargs)))
             except Exception, e:
                 errors.append((receiver, e))
-
         return results, errors
 
     def deferred_emit(self, signal, *args, **kwargs):
@@ -80,10 +94,8 @@ class Dispatcher(object):
         for receiver in self._get_receivers(signal):
             receivers.append(receiver)
             dfrs.append(defer.maybeDeferred(receiver, *args, **kwargs))
-
         if not dfrs:
             return defer.succeed([])
-
         result_dfr = defer.DeferredList(dfrs)
         result_dfr.addCallback(self._merge_results_and_receivers, receivers)
         return result_dfr
@@ -92,10 +104,8 @@ class Dispatcher(object):
         deferred = defer.Deferred()
         # run the deferred_emit in as a callback
         deferred.addCallback(self.deferred_emit, *args, **kwargs)
-        # and callback the deferred with the signal as the 'result' in the
-        # next mainloop iteration
-        from twisted.internet import reactor
-        reactor.callLater(0, deferred.callback, signal)
+        # and callback the deferred with the signal as the 'result' in the next mainloop iteration
+        callLater(0, deferred.callback, signal)
         return deferred
 
     def _merge_results_and_receivers(self, result, receivers):
@@ -118,12 +128,9 @@ class SignalingProperty(object):
 
     def __init__(self, signal, var_name = None, default = None):
         self.signal = signal
-
         if var_name is None:
             var_name = "__%s__val" % signal
-
         self.var_name = var_name
-
         self.default = default
 
     def __get__(self, obj, objtype = None):
@@ -134,6 +141,7 @@ class SignalingProperty(object):
             return
         setattr(obj, self.var_name, value)
         obj.emit(self.signal, value)
+
 
 class ChangedSignalingProperty(SignalingProperty):
     """
@@ -147,6 +155,7 @@ class ChangedSignalingProperty(SignalingProperty):
             return
         setattr(obj, self.var_name, value)
         obj.emit(self.signal, value, before)
+
 
 class CustomSignalingProperty(object):
     """
@@ -179,12 +188,9 @@ class CustomSignalingProperty(object):
         while the signal is not emitted a second time. You might want to check
         for that in your fset.
         """
-
         old_value = self.fget(obj)
         self.fset(obj, value)
         new_value = self.fget(obj)
-
         if old_value == new_value:
             return
-
         obj.emit(self.signal, new_value)

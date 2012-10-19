@@ -1,10 +1,10 @@
+"""base
+
+The beginning point of coherence after the config dict is loaded.
 """
 # Licensed under the MIT license
 # http://opensource.org/licenses/mit-license.php
-
 # Copyright 2006,2007,2008 Frank Scholz <coherence@beebits.net>
-
-"""
 
 import socket
 import os
@@ -16,7 +16,6 @@ from twisted.internet.tcp import CannotListenError
 from twisted.internet import defer # , task, address
 from twisted.internet import reactor
 from twisted.web import resource, static
-
 import coherence.extern.louie as louie
 from coherence import __version__
 from coherence import log
@@ -30,7 +29,6 @@ try:
     import pkg_resources
 except ImportError:
     pkg_resources = None
-
 # These are used in add_device as targets of a global().get(...)
 # They are device_classes - add to the list if more are added.
 from coherence.upnp.devices.media_server import MediaServer
@@ -86,17 +84,17 @@ class SimpleRoot(resource.Resource, log.Loggable):
 
 
 class WebServer(log.Loggable):
+    """WebServer - for UI - currently disabled
+    """
     logCategory = 'webserver'
 
     def __init__(self, ui, port, coherence):
         try:
             if ui != 'yes':
-                """ use this to jump out here if we do not want
-                    the web ui """
+                """ use this to jump out here if we do not want the web ui """
                 raise ImportError
             self.warning("Web UI not supported atm, will return with version 0.7.0")
             raise ImportError
-
             from nevow import __version_info__, __version__
             if __version_info__ < (0, 9, 17):
                 self.warning("Nevow version %s too old, disabling WebUI" % __version__)
@@ -104,16 +102,13 @@ class WebServer(log.Loggable):
             from nevow import appserver, inevow
             from coherence.web.ui import Web, IWeb, WebUI
             from twisted.python.components import registerAdapter
-
             def ResourceFactory(original):
                 return WebUI(IWeb, original)
-
             registerAdapter(ResourceFactory, Web, inevow.IResource)
             self.web_root_resource = Web(coherence)
             self.site = appserver.NevowSite(self.web_root_resource)
         except ImportError:
             self.site = Site(SimpleRoot(coherence))
-
         self.port = reactor.listenTCP(port, self.site)
         coherence.web_server_port = self.port._realPortNumber
         # XXX: is this the right way to do it?
@@ -197,6 +192,9 @@ class Plugins(log.Loggable):
 
 class Coherence(log.Loggable):
     """The main entry point for Coherence.
+
+    This will create a singleton instance.
+    DBK - I refactored out various components - to better understand the setup process
     """
     logCategory = 'coherence'
     _instance_ = None  # Singleton
@@ -223,7 +221,6 @@ class Coherence(log.Loggable):
         """
         self.cls._instance_ = None
 
-# refactored out various components - to better understand the setup process
     def _setup_network_if(self):
         self.network_if = self.config.get('interface')
         if self.network_if:
@@ -377,7 +374,6 @@ class Coherence(log.Loggable):
         self.ctrl = None
         self.mirabeau = None
         self.web_server_port = 0
-
         self.web_server_port = int(self.config.get('serverport', 0))
         self._setup_logging()
         self.warning("Coherence UPnP framework version %s starting..." % __version__)
@@ -520,7 +516,6 @@ class Coherence(log.Loggable):
             if self.dbus:
                 self.dbus.shutdown()
                 self.dbus = None
-
             for backend in self.active_backends.itervalues():
                 backend.unregister()
             self.active_backends = {}
@@ -596,6 +591,7 @@ class Coherence(log.Loggable):
         for device in self.devices:
             if device.get_host() == host:
                 found.append(device)
+        #print "Base Found = ", found
         return found
 
     def get_device_with_usn(self, usn):
@@ -604,6 +600,7 @@ class Coherence(log.Loggable):
             if device.get_usn() == usn:
                 found = device
                 break
+        #print "Base Found = ", found
         return found
 
     def get_device_with_id(self, device_id):
@@ -615,6 +612,7 @@ class Coherence(log.Loggable):
             if l_id == device_id:
                 found = device
                 break
+        #print "Base Found = ", found
         return found
 
     def get_devices(self):
@@ -627,12 +625,12 @@ class Coherence(log.Loggable):
         return [d for d in self.devices if d.manifestation == 'remote']
 
     def create_device(self, device_type, infos):
-        self.info("creating ", infos['ST'], infos['USN'])
+        self.info("Base - create_device ", infos['ST'], infos['USN'])
         if infos['ST'] == 'upnp:rootdevice':
-            self.info("creating upnp:rootdevice ", infos['USN'])
+            self.info("Base - create_device upnp:rootdevice ", infos['USN'])
             root = RootDevice(infos)
         else:
-            self.info("creating device/service ", infos['USN'])
+            self.info("Base - create_device/service ", infos['USN'])
             root_id = infos['USN'][:-len(infos['ST']) - 2]
             root = self.get_device_with_id(root_id)
             _device = Device(infos, root)
@@ -640,10 +638,12 @@ class Coherence(log.Loggable):
         # and we are on the device level already, so we can work with them instead with the SSDP announce
         #if infos['ST'] == 'upnp:rootdevice':
         #    self.callback("new_device", infos['ST'], infos)
+        pass
 
     def add_device(self, device):
-        self.info("adding device", device.get_id(), device.get_usn(), device.friendly_device_type)
+        self.info("Base - add_device", device.get_id(), device.get_usn(), device.friendly_device_type)
         self.devices.append(device)
+        #print "Base - Devices =", self.devices
 
     def remove_device(self, device_type, infos):
         self.info("removed device", infos['ST'], infos['USN'])
@@ -669,6 +669,7 @@ class Coherence(log.Loggable):
     def connect(self, receiver, signal = louie.signal.All, sender = louie.sender.Any, weak = True):
         """ wrapper method around louie.connect
         """
+        print "Connect #4"
         louie.connect(receiver, signal = signal, sender = sender, weak = weak)
 
     def disconnect(self, receiver, signal = louie.signal.All, sender = louie.sender.Any, weak = True):

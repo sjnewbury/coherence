@@ -477,23 +477,27 @@ class RootDevice(Device):
         return False
 
     def device_detect(self, *args, **kwargs):
-        self.debug("device_detect %r", kwargs)
-        self.debug("root_detection_completed %r", self.root_detection_completed)
+        """Called when device message rxed
+
+        Note:  repeat messages are sent since UDP is used.
+        """
+        self.debug("Device_detect %r", kwargs)
+        self.debug("Device_detect - root_detection_completed %r", self.root_detection_completed)
         if self.root_detection_completed == True:
             return
         # our self is not complete yet
-        self.debug("detection_completed %r", self.detection_completed)
+        self.debug("Device_detect - sevice_detection_completed %r", self.detection_completed)
         if self.detection_completed == False:
             return
         # now check child devices.
-        self.debug("self.devices %r", self.devices)
+        self.debug("Device_detect - self.devices = %r", self.devices)
         for d in self.devices:
-            self.debug("check device %r %r", d.detection_completed, d)
+            self.debug("Device_detect - check device %r %r", d.detection_completed, d)
             if d.detection_completed == False:
                 return
         # now must be done, so notify root done
         self.root_detection_completed = True
-        self.info("rootdevice %r %r %r initialized, manifestation %r" % (self.friendly_name, self.st, self.host, self.manifestation))
+        self.info("Device_detect - rootdevice %r %r %r initialized, manifestation %r" % (self.friendly_name, self.st, self.host, self.manifestation))
         louie.send('Coherence.UPnP.RootDevice.detection_completed', None, device = self)
 
     def add_device(self, device):
@@ -534,7 +538,7 @@ class RootDevice(Device):
                     self.parse_device(d) # root device
 
         def gotError(failure, url):
-            self.warning("error getting device description from %r", url, failure)
+            self.warning("error getting device description from %r", url)
             self.info(failure)
 
         utils.getPage(self.location).addCallbacks(gotPage, gotError, None, None, [self.location], None)

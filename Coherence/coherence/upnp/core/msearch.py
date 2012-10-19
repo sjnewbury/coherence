@@ -1,26 +1,21 @@
+"""msearch
 """
-Licensed under the MIT license
-http://opensource.org/licenses/mit-license.php
-
-Copyright (C) 2006 Fluendo, S.A. (www.fluendo.com).
-Copyright 2006, Frank Scholz <coherence@beebits.net>
-"""
+# Licensed under the MIT license
+# http://opensource.org/licenses/mit-license.php
+# Copyright (C) 2006 Fluendo, S.A. (www.fluendo.com).
+# Copyright 2006, Frank Scholz <coherence@beebits.net>
 
 import socket
 import time
-
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
-
 from coherence.upnp.core import utils
-
 import coherence.extern.louie as louie
+from coherence import log
 
 SSDP_PORT = 1900
 SSDP_ADDR = '239.255.255.250'
-
-from coherence import log
 
 class MSearch(DatagramProtocol, log.Loggable):
     logCategory = 'msearch'
@@ -48,7 +43,6 @@ class MSearch(DatagramProtocol, log.Loggable):
             else:
                 self.ssdp_server.known[headers['usn']]['last-seen'] = time.time()
                 self.debug('updating last-seen for %r' % headers['usn'])
-
         # make raw data available
         # send out the signal after we had a chance to register the device
         louie.send('UPnP.SSDP.datagram_received', None, data, host, port)
@@ -67,7 +61,6 @@ class MSearch(DatagramProtocol, log.Loggable):
                 'ST: ssdp:all',
                 '', '']
         req = '\r\n'.join(req)
-
         try:
             self.transport.write(req, (SSDP_ADDR, SSDP_PORT))
         except socket.error, msg:

@@ -11,7 +11,6 @@
     inspired by ElementSOAP.py
 """
 from twisted.python.util import OrderedDict
-
 from coherence.extern.et import ET
 
 NS_SOAP_ENV = "{http://schemas.xmlsoap.org/soap/envelope/}"
@@ -54,8 +53,7 @@ def build_soap_error(status, description = 'without words'):
 def build_soap_call(method, arguments, is_response = False,
                     encoding = SOAP_ENCODING, envelope_attrib = None, typed = None):
     """ create a shell for a SOAP request or response element
-        - set method to none to omit the method element and
-          add the arguments directly to the body (for an error msg)
+        - set method to none to omit the method element and add the arguments directly to the body (for an error msg)
         - arguments can be a dict or an ET.Element
     """
     envelope = ET.Element("s:Envelope")

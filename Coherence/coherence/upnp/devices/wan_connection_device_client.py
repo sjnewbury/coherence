@@ -21,14 +21,10 @@ class WANConnectionDeviceClient(log.Loggable):
         self.device_type = self.device.get_friendly_device_type()
         self.version = int(self.device.get_device_type_version())
         self.icons = device.icons
-
         self.wan_ip_connection = None
         self.wan_ppp_connection = None
-
         self.detection_completed = False
-
-        louie.connect(self.service_notified, signal='Coherence.UPnP.DeviceClient.Service.notified', sender=self.device)
-
+        louie.connect(self.service_notified, signal = 'Coherence.UPnP.DeviceClient.Service.notified', sender = self.device)
         for service in self.device.get_services():
             if service.get_type() in ["urn:schemas-upnp-org:service:WANIPConnection:1"]:
                 self.wan_ip_connection = WANIPConnectionClient(service)

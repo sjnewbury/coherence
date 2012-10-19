@@ -25,6 +25,7 @@ signal.All = All
 class GlobalDispatcher(Dispatcher):
 
     def connect(self, signal, callback, *args, **kw):
+        #print " Connect #6 (louie GD) Signal:{0:}, Callback:{1:}, Arg:{2:}, KeyWords{3:};".format(signal, sender, args, kw)
         if not signal in self.receivers:
             # ugly hack
             self.receivers[signal] = []
@@ -43,7 +44,8 @@ _global_receivers_pool = {}
 def _display_deprecation_warning():
     warnings.warn("extern.louie will soon be deprecated in favor of coherence.dispatcher.")
 
-def connect(receiver, signal=All, sender=Any, weak=True):
+def connect(receiver, signal = All, sender = Any, weak = True):
+    #print " Connect #1 (louie) Receiver:{0:}, Signal:{1:}, Sender:{2:}, Weak:{3:}".format(receiver, signal, sender, weak)
     callback = receiver
     if signal in (Any, All):
         raise NotImplemented("This is not allowed. Signal HAS to be something")
@@ -53,7 +55,7 @@ def connect(receiver, signal=All, sender=Any, weak=True):
     _global_receivers_pool[(callback, signal)] = receiver
     return receiver
 
-def disconnect(receiver, signal=All, sender=Any, weak=True):
+def disconnect(receiver, signal = All, sender = Any, weak = True):
     callback = receiver
     if signal in (Any, All):
         raise NotImplemented("This is not allowed. Signal HAS to be something")
@@ -62,7 +64,8 @@ def disconnect(receiver, signal=All, sender=Any, weak=True):
     receiver = _global_receivers_pool.pop((callback, signal))
     return _global_dispatcher.disconnect(receiver)
 
-def send(signal=All, sender=Anonymous, *arguments, **named):
+def send(signal = All, sender = Anonymous, *arguments, **named):
+    #print "Louie.send - Signal:{0:}, Sender:{1:}".format(signal, sender)
     if signal in (Any, All):
         raise NotImplemented("This is not allowed. Signal HAS to be something")
     if sender not in (Anonymous, None):
@@ -70,13 +73,13 @@ def send(signal=All, sender=Anonymous, *arguments, **named):
     # the first value of the callback shall always be the signal:
     return _global_dispatcher.save_emit(signal, *arguments, **named)
 
-def send_minimal(signal=All, sender=Anonymous, *arguments, **named):
+def XXXsend_minimal(signal = All, sender = Anonymous, *arguments, **named):
     return send(signal, sender, *arguments, **named)
 
-def send_exact(signal=All, sender=Anonymous, *arguments, **named):
+def XXXsend_exact(signal = All, sender = Anonymous, *arguments, **named):
     return send(signal, sender, *arguments, **named)
 
-def send_robust(signal=All, sender=Anonymous, *arguments, **named):
+def XXXsend_robust(signal = All, sender = Anonymous, *arguments, **named):
     return send(signal, sender, *arguments, **named)
 
 

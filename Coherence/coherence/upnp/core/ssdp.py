@@ -1,5 +1,4 @@
-"""
-Implementation of a SSDP server under Twisted Python.
+"""Implementation of a SSDP server under Twisted Python.
 
 """
 # Licensed under the MIT license
@@ -11,7 +10,6 @@ Implementation of a SSDP server under Twisted Python.
 
 import random
 import string
-#import sys
 import time
 import socket
 from twisted.internet.protocol import DatagramProtocol
@@ -25,15 +23,15 @@ SSDP_PORT = 1900
 SSDP_ADDR = '239.255.255.250'
 
 class SSDPServer(DatagramProtocol, log.Loggable):
-    """A class implementing a SSDP server.  The notifyReceived and
-    searchReceived methods are called when the appropriate type of
-    datagram is received by the server."""
+    """A class implementing a SSDP server.
+
+    The notifyReceived and searchReceived methods are called when the appropriate type of datagram is received by the server.
+    """
     logCategory = 'ssdp'
     known = {}
     _callbacks = {}
 
     def __init__(self, test = False, interface = ''):
-        # Create SSDP server
         self.test = test
         if self.test == False:
             try:

@@ -7,16 +7,13 @@
 """
 
 import coherence.extern.louie as louie
+#from coherence.dispatcher import Dispatcher
 from coherence.upnp.core.utils import generalise_boolean
 from coherence.backend import Backend
 
 class SimpleLight(Backend):
-    """ this is a backend for a simple light
-        that only can be switched on or off
-
-        therefore we need to inform Coherence
-        about the state, and a method to change it
-
+    """ this is a backend for a simple light that only can be switched on or off
+        therefore we need to inform Coherence about the state, and a method to change it
         everything else is done by Coherence
     """
     implements = ['BinaryLight']
@@ -28,6 +25,8 @@ class SimpleLight(Backend):
         self.state = 0 # we start switched off
         self.family = kwargs.get('family', 'missing family')
         louie.send('Coherence.UPnP.Backend.init_completed', None, backend = self)
+        #Dispatcher().save_emit('Coherence.UPnP.Backend.init_completed', None, backend = self)
+        pass
 
     def upnp_init(self):
         if self.server:

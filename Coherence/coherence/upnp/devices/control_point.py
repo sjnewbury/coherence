@@ -20,8 +20,17 @@ import coherence.extern.louie as louie
 from coherence import log
 
 class DeviceQuery(object):
+    """Query devices.
+    """
 
     def __init__(self, p_type, pattern, callback, timeout = 0, oneshot = True):
+        """
+        @param p_type: is the query type: uuid, host, friendly_name.
+        @param pattern: is ?
+        @param callback: is the method to call when the device returns the value queried.
+        @param timeout: timeout
+        @param oneshot: True is only once, False is multiple calls.
+        """
         self.type = p_type
         self.pattern = pattern
         self.callback = callback
@@ -32,6 +41,10 @@ class DeviceQuery(object):
             self.pattern = self.pattern[5:]
 
     def fire(self, device):
+        """send the query to the device.
+
+        @param device: is the device to which the query goes.
+        """
         if callable(self.callback):
             self.callback(device)
         elif isinstance(self.callback, basestring):
@@ -39,6 +52,10 @@ class DeviceQuery(object):
         self.fired = True
 
     def check(self, device):
+        """Check the rreturned query and do repeats if needed.
+
+        @param device: is the device to which the query goes.
+        """
         if self.fired and self.oneshot:
             return
         if(self.type == 'host' and
@@ -55,9 +72,10 @@ class ControlPoint(log.Loggable):
     logCategory = 'controlpoint'
 
     def __init__(self, coherence, auto_client = ['MediaServer', 'MediaRenderer', 'BinaryLight', 'DimmableLight']):
-        """
+        """Imolement a UPnP Control Point
+
         @param coherence: a configured instance of coherence.base.Coherence()
-        @param auto_client:
+        @param auto_client: is a list of the types of devices that we want to control.
         """
         self.coherence = coherence
         self.info("Coherence UPnP ControlPoint starting...")
@@ -70,8 +88,12 @@ class ControlPoint(log.Loggable):
         louie.connect(self.check_device, 'Coherence.UPnP.Device.detection_completed', louie.Any)
         louie.connect(self.remove_client, 'Coherence.UPnP.Device.remove_client', louie.Any)
         louie.connect(self.completed, 'Coherence.UPnP.DeviceClient.detection_completed', louie.Any)
+        #print "control_point.__init__() Auto_client:{0:}".format(self.auto_client)
+        pass
 
     def shutdown(self):
+        """Shut down the Control Point.
+        """
         louie.disconnect(self.check_device, 'Coherence.UPnP.Device.detection_completed', louie.Any)
         louie.disconnect(self.remove_client, 'Coherence.UPnP.Device.remove_client', louie.Any)
         louie.disconnect(self.completed, 'Coherence.UPnP.DeviceClient.detection_completed', louie.Any)
@@ -110,6 +132,7 @@ class ControlPoint(log.Loggable):
         @param sender:
         @param weak:
         """
+        #print " Connect #3 (ControlPoint) Receiver:{0:}, Signal:{1:}, Sender:{2:}, Weak:{3:}".format(receiver, signal, sender, weak)
         louie.connect(receiver, signal = signal, sender = sender, weak = weak)
 
     def disconnect(self, receiver, signal = louie.signal.All, sender = louie.sender.Any, weak = True):
@@ -128,10 +151,13 @@ class ControlPoint(log.Loggable):
 
     def check_device(self, device):
         if device.client == None:
-            self.info("found device %s of type %s - %r" % (device.get_friendly_name(), device.get_device_type(), device.client))
             short_type = device.get_friendly_device_type()
+            friendly_name = device.get_friendly_name()
+            self.info("found device %s of type %s - %r" % (friendly_name, device.get_device_type(), device.client))
+            #print("control_point.check_device() found Device:{0:}, Type:{1:}, Client:{2:}, Type:{3:}".format(friendly_name, device.get_device_type(), device.client, short_type))
             if short_type in self.auto_client and short_type is not None:
-                self.info("identified %s %r" % (short_type, device.get_friendly_name()))
+                self.info("identified %s %r" % (short_type, friendly_name))
+                #print("control_point.check_device() identified %s %r" % (short_type, friendly_name))
                 if short_type == 'MediaServer':
                     client = MediaServerClient(device)
                 if short_type == 'MediaRenderer':
@@ -147,10 +173,14 @@ class ControlPoint(log.Loggable):
         self.process_queries(device)
 
     def completed(self, client, udn):
+        l_type = client.device_type
+        l_msg = 'sending signal Coherence.UPnP.ControlPoint.{0:}.detected'.format(l_type)
+        #print "Control_point.completed() sending ", l_msg, udn
         self.info('sending signal Coherence.UPnP.ControlPoint.%s.detected %r' % (client.device_type, udn))
-        louie.send('Coherence.UPnP.ControlPoint.%s.detected' % client.device_type, None, client = client, udn = udn)
+        louie.send(l_msg, None, client = client, udn = udn)
 
     def remove_client(self, udn, client):
+        #print "Control_point.remove_client() ", client
         louie.send('Coherence.UPnP.ControlPoint.%s.removed' % client.device_type, None, udn = udn)
         self.info("removed %s %s" % (client.device_type, client.device.get_friendly_name()))
         client.remove()
@@ -166,6 +196,7 @@ class ControlPoint(log.Loggable):
                 pass
 
     def put_resource(self, url, path):
+
         def got_result(result):
             print result
 
@@ -199,7 +230,7 @@ class XMLRPC(xmlrpc.XMLRPC):
         print "list_devices"
         r = []
         for device in self.control_point.get_devices():
-            #print device.get_friendly_name(), device.get_service_type(), device.get_location(), device.get_id()
+            print device.get_friendly_name(), device.get_service_type(), device.get_location(), device.get_id()
             d = {}
             d[u'friendly_name'] = device.get_friendly_name()
             d[u'device_type'] = device.get_device_type()
@@ -209,7 +240,7 @@ class XMLRPC(xmlrpc.XMLRPC):
         return r
 
     def xmlrpc_mute_device(self, device_id):
-        print "mute"
+        print "mute", device_id
         device = self.control_point.get_device_with_id(device_id)
         if device != None:
             client = device.get_client()
@@ -227,7 +258,7 @@ class XMLRPC(xmlrpc.XMLRPC):
         return "Error"
 
     def xmlrpc_set_volume(self, device_id, volume):
-        print "set volume"
+        print "set volume", device_id
         device = self.control_point.get_device_with_id(device_id)
         if device != None:
             client = device.get_client()
@@ -236,7 +267,7 @@ class XMLRPC(xmlrpc.XMLRPC):
         return "Error"
 
     def xmlrpc_play(self, device_id):
-        print "play"
+        print "play", device_id
         device = self.control_point.get_device_with_id(device_id)
         if device != None:
             client = device.get_client()
@@ -245,7 +276,7 @@ class XMLRPC(xmlrpc.XMLRPC):
         return "Error"
 
     def xmlrpc_pause(self, device_id):
-        print "pause"
+        print "pause", device_id
         device = self.control_point.get_device_with_id(device_id)
         if device != None:
             client = device.get_client()

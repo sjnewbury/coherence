@@ -387,7 +387,6 @@ def send_notification(s, xml):
     return its response
     """
     log_category = "notification_protocol"
-
     _, host_port, path, _, _ = urlsplit(s['callback'])
     if path == '':
         path = '/'
