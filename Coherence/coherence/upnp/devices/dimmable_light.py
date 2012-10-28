@@ -70,7 +70,7 @@ class DimmableLight(log.Loggable, BasicDeviceMixin):
         version = self.version
         while version > 0:
             self.web_resource.putChild('description-%d.xml' % version,
-                                    RootDeviceXML(self.coherence.hostname,
+                                RootDeviceXML(self.coherence.hostname,
                                     str(self.uuid),
                                     self.coherence.urlbase,
                                     device_type = self.device_type, version = version,
@@ -86,7 +86,6 @@ class DimmableLight(log.Loggable, BasicDeviceMixin):
         for icon in self.icons:
             if icon.has_key('url'):
                 if icon['url'].startswith('file://'):
-                    self.web_resource.putChild(os.path.basename(icon['url']),
-                                               static.File(icon['url'][7:]))
+                    self.web_resource.putChild(os.path.basename(icon['url']), static.File(icon['url'][7:]))
         self.register()
         self.warning("%s %s (%s) activated with %s" % (self.backend.name, self.device_type, self.backend, str(self.uuid)[5:]))

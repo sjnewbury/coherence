@@ -422,9 +422,7 @@ class MSRoot(resource.Resource, log.Loggable):
 
     def render(self, request):
         #print "render", request
-        return '<html><p>root of the %s MediaServer</p><p><ul>%s</ul></p></html>' % \
-                                        (self.server.backend,
-                                         self.listchilds(request.uri))
+        return '<html><p>root of the %s MediaServer</p><p><ul>%s</ul></p></html>' % (self.server.backend, self.listchilds(request.uri))
 
 
 class RootDeviceXML(static.Data):

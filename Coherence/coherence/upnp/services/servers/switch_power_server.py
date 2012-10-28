@@ -7,10 +7,7 @@
 # Copyright 2008, Frank Scholz <coherence@beebits.net>
 
 from twisted.web import resource
-#from twisted.python import failure
-#from twisted.internet import task
 from coherence.upnp.core.soap_service import UPnPPublisher
-#from coherence.upnp.core.soap_service import errorCode
 from coherence.upnp.core import service
 from coherence import log
 
@@ -21,6 +18,10 @@ class SwitchPowerControl(service.ServiceControl, UPnPPublisher):
         self.service = server
         self.variables = server.get_variables()
         self.actions = server.get_actions()
+        print "dimming_server service:{0:}".format(self.service)
+        print "dimming_server variables:{0:}".format(self.variables)
+        print "dimming_server actions:{0:}\n".format(self.actions)
+        pass
 
 
 class SwitchPowerServer(service.ServiceServer, resource.Resource, log.Loggable):

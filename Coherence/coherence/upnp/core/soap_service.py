@@ -19,11 +19,8 @@ class errorCode(Exception):
 
 
 class UPnPPublisher(resource.Resource, log.Loggable):
-    """ Based upon twisted.web.soap.SOAPPublisher and
-        extracted to remove the SOAPpy dependency
-
-        UPnP requires headers and OUT parameters to be returned
-        in a slightly
+    """ Based upon twisted.web.soap.SOAPPublisher and extracted to remove the SOAPpy dependency.
+        UPnP requires headers and OUT parameters to be returned in a slightly
         different way than the SOAPPublisher class does.
     """
     logCategory = 'soap'

@@ -346,20 +346,13 @@ class Service(log.Loggable):
         utils.getPage(self.get_scpd_url()).addCallbacks(gotPage, gotError, None, None, [self.get_scpd_url()], None)
 
 moderated_variables = \
-        {'urn:schemas-upnp-org:service:AVTransport:2':
-            ['LastChange'],
-         'urn:schemas-upnp-org:service:AVTransport:1':
-            ['LastChange'],
-         'urn:schemas-upnp-org:service:ContentDirectory:2':
-            ['SystemUpdateID', 'ContainerUpdateIDs'],
-         'urn:schemas-upnp-org:service:ContentDirectory:1':
-            ['SystemUpdateID', 'ContainerUpdateIDs'],
-         'urn:schemas-upnp-org:service:RenderingControl:2':
-            ['LastChange'],
-         'urn:schemas-upnp-org:service:RenderingControl:1':
-            ['LastChange'],
-         'urn:schemas-upnp-org:service:ScheduledRecording:1':
-            ['LastChange'],
+        {'urn:schemas-upnp-org:service:AVTransport:2': ['LastChange'],
+         'urn:schemas-upnp-org:service:AVTransport:1': ['LastChange'],
+         'urn:schemas-upnp-org:service:ContentDirectory:2': ['SystemUpdateID', 'ContainerUpdateIDs'],
+         'urn:schemas-upnp-org:service:ContentDirectory:1': ['SystemUpdateID', 'ContainerUpdateIDs'],
+         'urn:schemas-upnp-org:service:RenderingControl:2': ['LastChange'],
+         'urn:schemas-upnp-org:service:RenderingControl:1': ['LastChange'],
+         'urn:schemas-upnp-org:service:ScheduledRecording:1': ['LastChange'],
         }
 
 class ServiceServer(log.Loggable):

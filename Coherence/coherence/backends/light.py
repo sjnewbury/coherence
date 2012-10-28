@@ -1,13 +1,11 @@
 """
+"""
 # Licensed under the MIT license
 # http://opensource.org/licenses/mit-license.php
-
 # Copyright 2008, Frank Scholz <coherence@beebits.net>
 
-"""
 
 import coherence.extern.louie as louie
-#from coherence.dispatcher import Dispatcher
 from coherence.upnp.core.utils import generalise_boolean
 from coherence.backend import Backend
 
