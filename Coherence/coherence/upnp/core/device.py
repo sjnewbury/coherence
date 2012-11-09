@@ -15,6 +15,8 @@ import coherence.extern.louie as louie
 ns = "urn:schemas-upnp-org:device-1-0"
 
 class Device(log.Loggable):
+    """Each device instantiates this class.
+    """
     logCategory = 'device'
 
     def __init__(self, parent = None):
