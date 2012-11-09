@@ -8,6 +8,8 @@ from twisted.internet import reactor
 
 callLater = reactor.callLater
 
+g_debug = 0
+
 
 class UnknownSignal(Exception): pass
 """Error - unknown signal.
@@ -64,7 +66,7 @@ class Dispatcher(object):
         return receiver
 
     def disconnect(self, receiver):
-        print "dispatcher.disconnect - Receiver:{0:}".format(receiver)
+        if g_debug > 0: print "dispatcher.disconnect - Receiver:{0:}".format(receiver)
         if not receiver:
             return
         try:
