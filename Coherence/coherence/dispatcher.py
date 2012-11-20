@@ -57,7 +57,7 @@ class Dispatcher(object):
             self.receivers[signal] = []
 
     def connect(self, signal, callback, *args, **kw):
-        #print " Connect #2 (dispatcher) Signal:{0:}, Callback:{1:}, Args:{2:}, Kwrgs:{3:};".format(signal, callback, args, kw)
+        # print " Connect #2 (dispatcher) Signal:{0:}, Callback:{1:}, Args:{2:}, Kwrgs:{3:};".format(signal, callback, args, kw)
         receiver = Receiver(signal, callback, args, kw)
         try:
             self.receivers[signal].append(receiver)
@@ -66,7 +66,8 @@ class Dispatcher(object):
         return receiver
 
     def disconnect(self, receiver):
-        if g_debug > 0: print "dispatcher.disconnect - Receiver:{0:}".format(receiver)
+        if g_debug > 0:
+            print "dispatcher.disconnect - Receiver:{0:}".format(receiver)
         if not receiver:
             return
         try:
