@@ -762,11 +762,11 @@ class DBusPontoon(dbus.service.Object, log.Loggable):
             return
         for device in self.controlpoint.get_devices():
             self.devices[device.get_id()] = DBusDevice(device, self.bus_name)
-        #louie.connect(self.cp_ms_detected, 'Coherence.UPnP.ControlPoint.MediaServer.detected', louie.Any)
-        #louie.connect(self.cp_ms_removed, 'Coherence.UPnP.ControlPoint.MediaServer.removed', louie.Any)
-        #louie.connect(self.cp_mr_detected, 'Coherence.UPnP.ControlPoint.MediaRenderer.detected', louie.Any)
-        #louie.connect(self.cp_mr_removed, 'Coherence.UPnP.ControlPoint.MediaRenderer.removed', louie.Any)
-        #louie.connect(self.remove_client, 'Coherence.UPnP.Device.remove_client', louie.Any)
+        louie.connect(self.cp_ms_detected, 'Coherence.UPnP.ControlPoint.MediaServer.detected', louie.Any)
+        louie.connect(self.cp_ms_removed, 'Coherence.UPnP.ControlPoint.MediaServer.removed', louie.Any)
+        louie.connect(self.cp_mr_detected, 'Coherence.UPnP.ControlPoint.MediaRenderer.detected', louie.Any)
+        louie.connect(self.cp_mr_removed, 'Coherence.UPnP.ControlPoint.MediaRenderer.removed', louie.Any)
+        louie.connect(self.remove_client, 'Coherence.UPnP.Device.remove_client', louie.Any)
         louie.connect(self._device_detected, 'Coherence.UPnP.Device.detection_completed', louie.Any)
         louie.connect(self._device_removed, 'Coherence.UPnP.Device.removed', louie.Any)
         self.debug("D-Bus pontoon started")

@@ -23,8 +23,6 @@ try:
     have_netifaces = True
 except ImportError:
     have_netifaces = False
-#from os.path import abspath
-#from twisted.python.util import InsensitiveDict
 
 
 def means_true(value):
@@ -42,15 +40,12 @@ def generalise_boolean(value):
         return '1'
     return '0'
 
-generalize_boolean = generalise_boolean
-
-
 def parse_xml(data, encoding = "utf-8"):
     return et_parse_xml(data, encoding)
 
 def parse_http_response(data):
-
-    """ don't try to get the body, there are reponses without """
+    """ don't try to get the body, there are reponses without any
+    """
     header = data.split('\r\n\r\n')[0]
     lines = header.split('\r\n')
     cmd = lines[0].split(' ')
@@ -58,6 +53,8 @@ def parse_http_response(data):
     lines = filter(lambda x: len(x) > 0, lines)
     headers = [x.split(':', 1) for x in lines]
     headers = dict(map(lambda x: (x[0].lower(), x[1]), headers))
+    print "cmd", cmd
+    print "Headers - ", headers['server']
     return cmd, headers
 
 def get_ip_address(ifname):
@@ -189,6 +186,7 @@ def de_chunk_payload(response):
         _line = response.readline() # after chunk and before next chunk length
         l_len = read_chunk_length()
     return newresponse.getvalue()
+
 
 class Request(server.Request):
 

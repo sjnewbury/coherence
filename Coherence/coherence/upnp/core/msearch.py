@@ -35,7 +35,8 @@ class MSearch(DatagramProtocol, log.Loggable):
             if not self.ssdp_server.isKnown(headers['usn']):
                 self.info('register as remote %s, %s, %s' % (headers['usn'], headers['st'], headers['location']))
                 self.ssdp_server.register('remote',
-                                            headers['usn'], headers['st'],
+                                            headers['usn'],
+                                            headers['st'],
                                             headers['location'],
                                             headers['server'],
                                             headers['cache-control'],

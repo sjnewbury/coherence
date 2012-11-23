@@ -21,11 +21,14 @@ sender.Any = Any
 #signals
 signal.All = All
 
+g_debug = 1
+
 # a slightly less raise-y-ish implementation as louie was not so picky, too
 class GlobalDispatcher(Dispatcher):
 
     def connect(self, signal, callback, *args, **kw):
-        #print " Connect #6 (louie GD) Signal:{0:}, Callback:{1:}, Arg:{2:}, KeyWords{3:};".format(signal, sender, args, kw)
+        if g_debug > 5:
+            print " Connect #6 = Signal: {0:}, Args: {1:}, KeyWords: {2:};".format(signal, args, kw)
         if not signal in self.receivers:
             # ugly hack
             self.receivers[signal] = []
@@ -45,7 +48,8 @@ def _display_deprecation_warning():
     warnings.warn("extern.louie will soon be deprecated in favor of coherence.dispatcher.")
 
 def connect(receiver, signal = All, sender = Any, weak = True):
-    #print " Connect #1 (louie) Receiver:{0:}, Signal:{1:}, Sender:{2:}, Weak:{3:}".format(receiver, signal, sender, weak)
+    if g_debug > 0:
+        print " Connect #1 = Signal: {0:}, Receiver: {1:}, Sender: {2:}, Weak: {3:}".format(signal, receiver, sender, weak)
     callback = receiver
     if signal in (Any, All):
         raise NotImplemented("This is not allowed. Signal HAS to be something")

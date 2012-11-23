@@ -443,7 +443,7 @@ class RootDevice(Device):
         self.parse_description()
 
     def __repr__(self):
-        return "rootdevice %r %r %r %r, manifestation %r" % (self.friendly_name, self.udn, self.st, self.host, self.manifestation)
+        return "rootdevice Name: %r, Udn: %r, St: %r, Host: %r, manifestation: %r" % (self.friendly_name, self.udn, self.st, self.host, self.manifestation)
 
     def remove(self, *args):
         result = Device.remove(self, *args)

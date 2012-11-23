@@ -9,7 +9,7 @@
 # Copyright 2006,2007,2008,2009 Frank Scholz <coherence@beebits.net>
 
 import random
-import string
+#import string
 import time
 import socket
 from twisted.internet.protocol import DatagramProtocol
@@ -18,6 +18,14 @@ from twisted.internet import task
 from twisted.web.http import datetimeToString
 from coherence import log, SERVER_ID
 import coherence.extern.louie as louie
+from coherence.upnp.core import utils
+
+
+# Cause eclipse error markings so gathere them all here
+callLater = reactor.callLater
+listenMulticast = reactor.listenMulticast
+getDelayedCalls = reactor.getDelayedCalls
+
 
 SSDP_PORT = 1900
 SSDP_ADDR = '239.255.255.250'
@@ -35,7 +43,7 @@ class SSDPServer(DatagramProtocol, log.Loggable):
         self.test = test
         if self.test == False:
             try:
-                self.port = reactor.listenMulticast(SSDP_PORT, self, listenMultiple = True)
+                listenMulticast(SSDP_PORT, self, listenMultiple = True)
                 #self.port.setLoopbackMode(1)
                 self.port.joinGroup(SSDP_ADDR, interface = interface)
                 self.resend_notify_loop = task.LoopingCall(self.resendNotify)
@@ -47,7 +55,7 @@ class SSDPServer(DatagramProtocol, log.Loggable):
         self.active_calls = []
 
     def shutdown(self):
-        for call in reactor.getDelayedCalls():
+        for call in getDelayedCalls():
             if call.func == self.send_it:
                 call.cancel()
         if self.test == False:
@@ -61,19 +69,21 @@ class SSDPServer(DatagramProtocol, log.Loggable):
                     self.doByebye(st)
 
     def datagramReceived(self, data, (host, port)):
-        """Handle a received multicast datagram."""
-        try:
-            header, _payload = data.split('\r\n\r\n')[:2]
-        except ValueError, err:
-            print err
-            print 'Arggg,', data
-            import pdb; pdb.set_trace()
-        lines = header.split('\r\n')
-        cmd = string.split(lines[0], ' ')
-        lines = map(lambda x: x.replace(': ', ':', 1), lines[1:])
-        lines = filter(lambda x: len(x) > 0, lines)
-        headers = [string.split(x, ':', 1) for x in lines]
-        headers = dict(map(lambda x: (x[0].lower(), x[1]), headers))
+        """Handle a received multicast datagram.
+        """
+        #try:
+        #    header, _payload = data.split('\r\n\r\n')[:2]
+        #except ValueError, err:
+        #    print err
+        #    print 'Arggg,', data
+        #    import pdb; pdb.set_trace()
+        #lines = header.split('\r\n')
+        #cmd = string.split(lines[0], ' ')
+        #lines = map(lambda x: x.replace(': ', ':', 1), lines[1:])
+        #lines = filter(lambda x: len(x) > 0, lines)
+        #headers = [string.split(x, ':', 1) for x in lines]
+        #headers = dict(map(lambda x: (x[0].lower(), x[1]), headers))
+        cmd, headers = utils.parse_http_response(data)
         self.msg('SSDP command %s %s - from %s:%d' % (cmd[0], cmd[1], host, port))
         self.debug('with headers:', headers)
         if cmd[0] == 'M-SEARCH' and cmd[1] == '*':
@@ -126,8 +136,9 @@ class SSDPServer(DatagramProtocol, log.Loggable):
         return self.known.has_key(usn)
 
     def notifyReceived(self, headers, (host, port)):
-        """Process a presence announcement.  We just remember the
-        details of the SSDP service announced."""
+        """Process a presence announcement.
+        We just remember the details of the SSDP service announced.
+        """
         self.info('Notification from (%s,%d) for %s' % (host, port, headers['nt']))
         self.debug('Notification headers:', headers)
         if headers['nts'] == 'ssdp:alive':
@@ -135,8 +146,13 @@ class SSDPServer(DatagramProtocol, log.Loggable):
                 self.known[headers['usn']]['last-seen'] = time.time()
                 self.debug('updating last-seen for %r' % headers['usn'])
             except KeyError:
-                self.register('remote', headers['usn'], headers['nt'], headers['location'],
-                              headers['server'], headers['cache-control'], host = host)
+                self.register('remote',
+                              headers['usn'],
+                              headers['nt'],
+                              headers['location'],
+                              headers['server'],
+                              headers['cache-control'],
+                              host = host)
         elif headers['nts'] == 'ssdp:byebye':
             if self.isKnown(headers['usn']):
                 self.unRegister(headers['usn'])
@@ -177,7 +193,7 @@ class SSDPServer(DatagramProtocol, log.Loggable):
                 response.append('DATE: %s' % datetimeToString())
                 response.extend(('', ''))
                 delay = random.randint(0, int(headers['mx']))
-                reactor.callLater(delay, self.send_it, '\r\n'.join(response), (host, port), delay, usn)
+                callLater(delay, self.send_it, '\r\n'.join(response), (host, port), delay, usn)
 
     def doNotify(self, usn):
         """Do notification"""

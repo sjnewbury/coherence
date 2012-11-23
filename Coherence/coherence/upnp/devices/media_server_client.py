@@ -23,21 +23,19 @@ class MediaServerClient(log.Loggable):
         self.content_directory = None
         self.connection_manager = None
         self.av_transport = None
-
         self.detection_completed = False
-
-        louie.connect(self.service_notified, signal='Coherence.UPnP.DeviceClient.Service.notified', sender=self.device)
-
+        print "## Media Server Client"
+        louie.connect(self.service_notified, signal = 'Coherence.UPnP.DeviceClient.Service.notified', sender = self.device)
         for service in self.device.get_services():
             if service.get_type() in ["urn:schemas-upnp-org:service:ContentDirectory:1",
                                       "urn:schemas-upnp-org:service:ContentDirectory:2"]:
-                self.content_directory = ContentDirectoryClient( service)
+                self.content_directory = ContentDirectoryClient(service)
             if service.get_type() in ["urn:schemas-upnp-org:service:ConnectionManager:1",
                                       "urn:schemas-upnp-org:service:ConnectionManager:2"]:
-                self.connection_manager = ConnectionManagerClient( service)
+                self.connection_manager = ConnectionManagerClient(service)
             if service.get_type() in ["urn:schemas-upnp-org:service:AVTransport:1",
                                       "urn:schemas-upnp-org:service:AVTransport:2"]:
-                self.av_transport = AVTransportClient( service)
+                self.av_transport = AVTransportClient(service)
             #if service.get_type()  in ["urn:schemas-upnp-org:service:ScheduledRecording:1",
             #                           "urn:schemas-upnp-org:service:ScheduledRecording:2"]:
             #    self.scheduled_recording = ScheduledRecordingClient( service)
@@ -79,6 +77,7 @@ class MediaServerClient(log.Loggable):
     def service_notified(self, service):
         self.info('notified about %r' % service)
         if self.detection_completed == True:
+            self.info('notified about %r  Completed' % service)
             return
         if self.content_directory != None:
             if not hasattr(self.content_directory.service, 'last_time_updated'):
@@ -102,16 +101,16 @@ class MediaServerClient(log.Loggable):
                 return
         self.detection_completed = True
         louie.send('Coherence.UPnP.DeviceClient.detection_completed', None,
-                               client=self,udn=self.device.udn)
+                               client = self, udn = self.device.udn)
         self.info('detection_completed for %r' % self)
 
-    def state_variable_change( self, variable, usn):
+    def state_variable_change(self, variable, usn):
         self.info(variable.name, 'changed from', variable.old_value, 'to', variable.value)
 
     def print_results(self, results):
         self.info("results=", results)
 
-    def process_meta( self, results):
-        for k,v in results.iteritems():
+    def process_meta(self, results):
+        for k, v in results.iteritems():
             dfr = self.content_directory.browse(k, "BrowseMetadata")
-            dfr.addCallback( self.print_results)
+            dfr.addCallback(self.print_results)
