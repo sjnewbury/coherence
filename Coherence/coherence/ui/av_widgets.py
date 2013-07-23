@@ -15,10 +15,10 @@ import urllib
 import traceback
 
 
-import pygtk
-pygtk.require("2.0")
-import gtk
-import gobject
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+from gi.repository import GObject
 
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
@@ -77,26 +77,26 @@ class DeviceExportWidget(object):
         self.standalone=standalone
 
         icon = resource_filename(__name__, os.path.join('icons','emblem-new.png'))
-        self.new_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.new_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','emblem-shared.png'))
-        self.shared_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.shared_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','emblem-unreadable.png'))
-        self.unshared_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.unshared_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
 
-        self.filestore = gtk.ListStore(str,gtk.gdk.Pixbuf)
+        self.filestore = Gtk.ListStore(str,GdkPixbuf.Pixbuf)
 
         self.coherence = ControlPoint().coherence
 
     def build_ui(self,root=None):
         if root != None:
             self.root = root
-        self.window = gtk.VBox(homogeneous=False, spacing=0)
+        self.window = Gtk.VBox(homogeneous=False, spacing=0)
 
-        self.fileview = gtk.TreeView(self.filestore)
-        column = gtk.TreeViewColumn('Folders to share')
+        self.fileview = Gtk.TreeView(self.filestore)
+        column = Gtk.TreeViewColumn('Folders to share')
         self.fileview.append_column(column)
-        icon_cell = gtk.CellRendererPixbuf()
-        text_cell = gtk.CellRendererText()
+        icon_cell = Gtk.CellRendererPixbuf()
+        text_cell = Gtk.CellRendererText()
 
         column.pack_start(icon_cell, False)
         column.pack_start(text_cell, True)
@@ -106,19 +106,19 @@ class DeviceExportWidget(object):
 
         self.window.pack_start(self.fileview,expand=True,fill=True)
 
-        buttonbox = gtk.HBox(homogeneous=False, spacing=0)
-        button = gtk.Button(stock=gtk.STOCK_ADD)
+        buttonbox = Gtk.HBox(homogeneous=False, spacing=0)
+        button = Gtk.Button(stock=Gtk.STOCK_ADD)
         button.set_sensitive(False)
         button.connect("clicked", self.new_files)
         buttonbox.pack_start(button, expand=False,fill=False, padding=2)
-        button = gtk.Button(stock=gtk.STOCK_REMOVE)
+        button = Gtk.Button(stock=Gtk.STOCK_REMOVE)
         #button.set_sensitive(False)
         button.connect("clicked", self.remove_files)
         buttonbox.pack_start(button, expand=False,fill=False, padding=2)
-        button = gtk.Button(stock=gtk.STOCK_CANCEL)
+        button = Gtk.Button(stock=Gtk.STOCK_CANCEL)
         button.connect("clicked", self.share_cancel)
         buttonbox.pack_start(button, expand=False,fill=False, padding=2)
-        button = gtk.Button(stock=gtk.STOCK_APPLY)
+        button = Gtk.Button(stock=Gtk.STOCK_APPLY)
         button.connect("clicked", self.share_files)
         buttonbox.pack_start(button, expand=False,fill=False, padding=2)
 
@@ -135,7 +135,7 @@ class DeviceExportWidget(object):
                 row[1] = self.shared_icon
 
         if self.standalone:
-            gtk.main_quit()
+            Gtk.main_quit()
         else:
             self.root.hide()
 
@@ -200,18 +200,18 @@ class DeviceImportWidget(object):
         self.init_controlpoint()
 
     def build_ui(self):
-        self.window = gtk.VBox(homogeneous=False, spacing=0)
-        self.combobox = gtk.ComboBox()
-        self.store = gtk.ListStore(str,  # 0: friendly name
+        self.window = Gtk.VBox(homogeneous=False, spacing=0)
+        self.combobox = Gtk.ComboBox()
+        self.store = Gtk.ListStore(str,  # 0: friendly name
                                    str,  # 1: device udn
-                                   gtk.gdk.Pixbuf)
+                                   GdkPixbuf.Pixbuf)
 
         icon = resource_filename(__name__, os.path.join('icons','network-server.png'))
-        self.device_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.device_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
 
         # create a CellRenderers to render the data
-        icon_cell = gtk.CellRendererPixbuf()
-        text_cell = gtk.CellRendererText()
+        icon_cell = Gtk.CellRendererPixbuf()
+        text_cell = Gtk.CellRendererText()
 
         self.combobox.pack_start(icon_cell, False)
         self.combobox.pack_start(text_cell, True)
@@ -230,34 +230,34 @@ class DeviceImportWidget(object):
 
         self.window.pack_start(self.combobox,expand=False,fill=False)
 
-        self.filestore = gtk.ListStore(str)
+        self.filestore = Gtk.ListStore(str)
 
-        self.fileview = gtk.TreeView(self.filestore)
-        column = gtk.TreeViewColumn('Files')
+        self.fileview = Gtk.TreeView(self.filestore)
+        column = Gtk.TreeViewColumn('Files')
         self.fileview.append_column(column)
-        text_cell = gtk.CellRendererText()
+        text_cell = Gtk.CellRendererText()
 
         column.pack_start(text_cell, True)
         column.set_attributes(text_cell, text=0)
 
         self.window.pack_start(self.fileview,expand=True,fill=True)
 
-        buttonbox = gtk.HBox(homogeneous=False, spacing=0)
-        button = gtk.Button(stock=gtk.STOCK_ADD)
+        buttonbox = Gtk.HBox(homogeneous=False, spacing=0)
+        button = Gtk.Button(stock=Gtk.STOCK_ADD)
         button.set_sensitive(False)
         button.connect("clicked", self.new_files)
         buttonbox.pack_start(button, expand=False,fill=False, padding=2)
-        button = gtk.Button(stock=gtk.STOCK_REMOVE)
+        button = Gtk.Button(stock=Gtk.STOCK_REMOVE)
         button.set_sensitive(False)
         button.connect("clicked", self.remove_files)
         buttonbox.pack_start(button, expand=False,fill=False, padding=2)
-        button = gtk.Button(stock=gtk.STOCK_CANCEL)
+        button = Gtk.Button(stock=Gtk.STOCK_CANCEL)
         if self.standalone:
-            button.connect("clicked", gtk.main_quit)
+            button.connect("clicked", Gtk.main_quit)
         else:
             button.connect("clicked", lambda x: self.root.destroy())
         buttonbox.pack_start(button, expand=False,fill=False, padding=2)
-        button = gtk.Button(stock=gtk.STOCK_APPLY)
+        button = Gtk.Button(stock=Gtk.STOCK_APPLY)
         button.connect("clicked", self.import_files)
         buttonbox.pack_start(button, expand=False,fill=False, padding=2)
 
@@ -351,11 +351,11 @@ class DeviceImportWidget(object):
                     print 'got_icons', r
                     for icon in r:
                         ###FIXME, we shouldn't just use the first icon
-                        icon_loader = gtk.gdk.PixbufLoader()
+                        icon_loader = GdkPixbuf.PixbufLoader()
                         icon_loader.write(urllib.urlopen(str(icon['url'])).read())
                         icon_loader.close()
                         icon = icon_loader.get_pixbuf()
-                        icon = icon.scale_simple(16,16,gtk.gdk.INTERP_BILINEAR)
+                        icon = icon.scale_simple(16,16,GdkPixbuf.InterpType.BILINEAR)
                         self.store.set_value(item, 2, icon)
                         break
 
@@ -398,38 +398,38 @@ class TreeWidget(object):
         self.init_controlpoint()
 
     def build_ui(self):
-        self.window = gtk.ScrolledWindow()
-        self.window.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.window = Gtk.ScrolledWindow()
+        self.window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
         icon = resource_filename(__name__, os.path.join('icons','network-server.png'))
-        self.device_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.device_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','folder.png'))
-        self.folder_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.folder_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','audio-x-generic.png'))
-        self.audio_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.audio_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','video-x-generic.png'))
-        self.video_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.video_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','image-x-generic.png'))
-        self.image_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.image_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
 
-        self.store = gtk.TreeStore(str,  # 0: name or title
+        self.store = Gtk.TreeStore(str,  # 0: name or title
                                    str,  # 1: id, '0' for the device
                                    str,  # 2: upnp_class, 'root' for the device
                                    int,  # 3: child count, -1 if not available
                                    str,  # 4: device udn, '' for an item
                                    str,  # 5: service path, '' for a non container item
-                                   gtk.gdk.Pixbuf,
+                                   GdkPixbuf.Pixbuf,
                                    str,  # 7: DIDLLite fragment, '' for a non upnp item
-                                   gtk.gdk.Pixbuf
+                                   GdkPixbuf.Pixbuf
                                 )
 
-        self.treeview = gtk.TreeView(self.store)
-        self.column = gtk.TreeViewColumn('MediaServers')
+        self.treeview = Gtk.TreeView(self.store)
+        self.column = Gtk.TreeViewColumn('MediaServers')
         self.treeview.append_column(self.column)
 
         # create a CellRenderers to render the data
-        icon_cell = gtk.CellRendererPixbuf()
-        text_cell = gtk.CellRendererText()
+        icon_cell = Gtk.CellRendererPixbuf()
+        text_cell = Gtk.CellRendererText()
 
         self.column.pack_start(icon_cell, False)
         self.column.pack_start(text_cell, True)
@@ -455,8 +455,8 @@ class TreeWidget(object):
 
         def start_scrolling(w,e):
             if self.we_are_scrolling != None:
-                gobject.source_remove(self.we_are_scrolling)
-            self.we_are_scrolling = gobject.timeout_add(800, end_scrolling)
+                GObject.source_remove(self.we_are_scrolling)
+            self.we_are_scrolling = GObject.timeout_add(800, end_scrolling)
 
         self.treeview.connect('scroll-event', start_scrolling)
 
@@ -483,7 +483,7 @@ class TreeWidget(object):
                         protocol,network,content_format,additional_info = res.protocolInfo.split(':')
                         if(content_format == 'image/jpeg' and
                            'DLNA.ORG_PN=JPEG_TN' in additional_info.split(';')):
-                            icon_loader = gtk.gdk.PixbufLoader()
+                            icon_loader = GdkPixbuf.PixbufLoader()
                             icon_loader.write(urllib.urlopen(str(res.data)).read())
                             icon_loader.close()
                             icon = icon_loader.get_pixbuf()
@@ -623,11 +623,11 @@ class TreeWidget(object):
                     #print 'got_icons', r
                     for icon in r:
                         ###FIXME, we shouldn't just use the first icon
-                        icon_loader = gtk.gdk.PixbufLoader()
+                        icon_loader = GdkPixbuf.PixbufLoader()
                         icon_loader.write(urllib.urlopen(str(icon['url'])).read())
                         icon_loader.close()
                         icon = icon_loader.get_pixbuf()
-                        icon = icon.scale_simple(16,16,gtk.gdk.INTERP_BILINEAR)
+                        icon = icon.scale_simple(16,16,GdkPixbuf.InterpType.BILINEAR)
                         self.store.set_value(item, ICON_COLUMN, icon)
                         break
 
@@ -794,8 +794,8 @@ if __name__ == '__main__':
 
     ui=TreeWidget()
 
-    window = gtk.Window()
-    window.connect("delete_event", gtk.main_quit)
+    window = Gtk.Window()
+    window.connect("delete_event", Gtk.main_quit)
     window.set_default_size(350, 550)
 
     window.add(ui.window)
@@ -803,5 +803,5 @@ if __name__ == '__main__':
     window.show_all()
 
 
-    gtk.gdk.threads_init()
-    gtk.main()
+    Gdk.threads_init()
+    Gtk.main()

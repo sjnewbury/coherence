@@ -7,9 +7,9 @@
 
 import time
 
-import pygtk
-pygtk.require("2.0")
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 from twisted.internet import reactor
 
@@ -21,36 +21,36 @@ class EventsWidget(log.Loggable):
     def __init__(self, coherence,max_lines=500):
         self.coherence = coherence
         self.max_lines = max_lines
-        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         self.window.set_default_size(500,400)
         self.window.set_title('Events')
-        scroll_window = gtk.ScrolledWindow()
-        scroll_window.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.store = gtk.ListStore(str,str,str,str,str,str)
-        self.treeview = gtk.TreeView(self.store)
-        column = gtk.TreeViewColumn('Time')
+        scroll_window = Gtk.ScrolledWindow()
+        scroll_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        self.store = Gtk.ListStore(str,str,str,str,str,str)
+        self.treeview = Gtk.TreeView(self.store)
+        column = Gtk.TreeViewColumn('Time')
         self.treeview.append_column(column)
-        text_cell = gtk.CellRendererText()
+        text_cell = Gtk.CellRendererText()
         column.pack_start(text_cell, False)
         column.set_attributes(text_cell,text=0)
-        column = gtk.TreeViewColumn('Device')
+        column = Gtk.TreeViewColumn('Device')
         self.treeview.append_column(column)
-        text_cell = gtk.CellRendererText()
+        text_cell = Gtk.CellRendererText()
         column.pack_start(text_cell, False)
         column.set_attributes(text_cell,text=1)
-        column = gtk.TreeViewColumn('Service')
+        column = Gtk.TreeViewColumn('Service')
         self.treeview.append_column(column)
-        text_cell = gtk.CellRendererText()
+        text_cell = Gtk.CellRendererText()
         column.pack_start(text_cell, False)
         column.set_attributes(text_cell,text=2)
-        column = gtk.TreeViewColumn('Variable')
+        column = Gtk.TreeViewColumn('Variable')
         self.treeview.append_column(column)
-        text_cell = gtk.CellRendererText()
+        text_cell = Gtk.CellRendererText()
         column.pack_start(text_cell, False)
         column.set_attributes(text_cell,text=3)
-        column = gtk.TreeViewColumn('Value')
+        column = Gtk.TreeViewColumn('Value')
         self.treeview.append_column(column)
-        text_cell = gtk.CellRendererText()
+        text_cell = Gtk.CellRendererText()
         column.pack_start(text_cell, True)
         column.set_attributes(text_cell,text=4)
         scroll_window.add_with_viewport(self.treeview)
@@ -77,15 +77,15 @@ class EventsWidget(log.Loggable):
             return True
         row_path,column,_,_ = path
         if event.button == 3:
-            clipboard = gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
+            clipboard = Gtk.clipboard_get(Gdk.SELECTION_CLIPBOARD)
             iter = self.store.get_iter(row_path)
-            menu = gtk.Menu()
-            item = gtk.MenuItem("copy value")
+            menu = Gtk.Menu()
+            item = Gtk.MenuItem("copy value")
             value,= self.store.get(iter,4)
             item.connect("activate", lambda w: clipboard.set_text(value))
             menu.append(item)
 
-            item = gtk.MenuItem("copy raw event")
+            item = Gtk.MenuItem("copy raw event")
             raw,= self.store.get(iter,5)
             try:
                 from coherence.extern.et import ET, indent, parse_xml

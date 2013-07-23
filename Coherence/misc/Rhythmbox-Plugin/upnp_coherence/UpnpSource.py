@@ -19,9 +19,9 @@ class UpnpSource(rb.BrowserSource,log.Loggable):
     logCategory = 'rb_media_store'
 
     __gproperties__ = {
-        'plugin': (rb.Plugin, 'plugin', 'plugin', gobject.PARAM_WRITABLE|gobject.PARAM_CONSTRUCT_ONLY),
-        'client': (gobject.TYPE_PYOBJECT, 'client', 'client', gobject.PARAM_WRITABLE|gobject.PARAM_CONSTRUCT_ONLY),
-        'udn': (gobject.TYPE_PYOBJECT, 'udn', 'udn', gobject.PARAM_WRITABLE|gobject.PARAM_CONSTRUCT_ONLY),
+        'plugin': (rb.Plugin, 'plugin', 'plugin', GObject.PARAM_WRITABLE|GObject.PARAM_CONSTRUCT_ONLY),
+        'client': (GObject.TYPE_PYOBJECT, 'client', 'client', GObject.PARAM_WRITABLE|GObject.PARAM_CONSTRUCT_ONLY),
+        'udn': (GObject.TYPE_PYOBJECT, 'udn', 'udn', GObject.PARAM_WRITABLE|GObject.PARAM_CONSTRUCT_ONLY),
     }
 
     def __init__(self):
@@ -175,4 +175,4 @@ class UpnpSource(rb.BrowserSource,log.Loggable):
 
                     self.__db.commit()
                             
-gobject.type_register(UpnpSource)
+GObject.type_register(UpnpSource)

@@ -82,37 +82,37 @@ except ImportError:
 
 from coherence.upnp.core.utils import downloadPage
 
-import pygtk
-pygtk.require("2.0")
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 class Extract(object):
 
     def __init__(self,device):
         self.device = device
-        self.window = gtk.Dialog(title="Extracting XMl descriptions",
+        self.window = Gtk.Dialog(title="Extracting XMl descriptions",
                             parent=None,flags=0,buttons=None)
         self.window.connect("delete_event", self.hide)
-        label = gtk.Label("Extracting XMl device and service descriptions\nfrom %s @ %s" % (device.friendly_name, device.host))
+        label = Gtk.Label("Extracting XMl device and service descriptions\nfrom %s @ %s" % (device.friendly_name, device.host))
         self.window.vbox.pack_start(label, True, True, 10)
-        tar_button = gtk.CheckButton("tar.gz them")
+        tar_button = Gtk.CheckButton("tar.gz them")
         tar_button.connect("toggled", self._toggle_tar)
         self.window.vbox.pack_start(tar_button, True, True, 5)
 
         if haz_smtp == True:
-            self.email_button = gtk.CheckButton("email them to Coherence HQ (%s)" % EMAIL_RECIPIENT)
+            self.email_button = Gtk.CheckButton("email them to Coherence HQ (%s)" % EMAIL_RECIPIENT)
             self.email_button.set_sensitive(False)
             self.window.vbox.pack_start(self.email_button, True, True, 5)
 
-        align = gtk.Alignment(0.5, 0.5, 0.9, 0)
+        align = Gtk.Alignment.new(0.5, 0.5, 0.9, 0)
         self.window.vbox.pack_start(align, False, False, 5)
-        self.progressbar = gtk.ProgressBar()
+        self.progressbar = Gtk.ProgressBar()
         align.add(self.progressbar)
 
-        button = gtk.Button(stock=gtk.STOCK_CANCEL)
+        button = Gtk.Button(stock=Gtk.STOCK_CANCEL)
         self.window.action_area.pack_start(button, True, True, 5)
         button.connect("clicked", lambda w: self.window.destroy())
-        button = gtk.Button(stock=gtk.STOCK_OK)
+        button = Gtk.Button(stock=Gtk.STOCK_OK)
         self.window.action_area.pack_start(button, True, True, 5)
         button.connect("clicked", lambda w: self.extract(w,tar_button.get_active()))
         self.window.show_all()
@@ -133,17 +133,17 @@ class Extract(object):
             path = FilePath(tempfile.gettempdir())
 
             def device_extract(workdevice, workpath):
-                tmp_dir = workpath.child(workdevice.get_uuid())
+                tmp_dir = workpath.get_child()(workdevice.get_uuid())
                 if tmp_dir.exists():
                     tmp_dir.remove()
                 tmp_dir.createDirectory()
-                target = tmp_dir.child('device-description.xml')
+                target = tmp_dir.get_child()('device-description.xml')
                 print "d",target,target.path
                 d = downloadPage(workdevice.get_location(),target.path)
                 l.append(d)
 
                 for service in workdevice.services:
-                    target = tmp_dir.child('%s-description.xml'%service.service_type.split(':',3)[3])
+                    target = tmp_dir.get_child()('%s-description.xml'%service.service_type.split(':',3)[3])
                     print "s",target,target.path
                     d = downloadPage(service.get_scpd_url(),target.path)
                     l.append(d)
@@ -156,10 +156,10 @@ class Extract(object):
                 print "extraction of device %s finished" % uuid
                 print "files have been saved to %s" % os.path.join(tempfile.gettempdir(),uuid)
                 if make_tar == True:
-                    tgz_file = self.create_tgz(path.child(uuid))
+                    tgz_file = self.create_tgz(path.get_child()(uuid))
                     if haz_smtp == True and self.email_button.get_active() == True:
                         self.send_email(tgz_file)
-                    path.child(uuid).remove()
+                    path.get_child()(uuid).remove()
                 self.progressbar.set_fraction(0.0)
                 self.window.hide()
 

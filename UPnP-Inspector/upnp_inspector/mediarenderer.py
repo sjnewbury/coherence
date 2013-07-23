@@ -7,9 +7,9 @@
 
 import os
 
-import pygtk
-pygtk.require("2.0")
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 if __name__ == '__main__':
     from twisted.internet import gtk2reactor
@@ -28,7 +28,7 @@ class MediaRendererWidget(log.Loggable):
     def __init__(self,coherence,device):
         self.coherence = coherence
         self.device = device
-        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         self.window.connect("delete_event", self.hide)
         self.window.set_default_size(480,200)
         try:
@@ -37,56 +37,56 @@ class MediaRendererWidget(log.Loggable):
             title = 'MediaRenderer'
         self.window.set_title(title)
 
-        self.window.drag_dest_set(gtk.DEST_DEFAULT_DROP, [('upnp/metadata', 0, 1)], gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_PRIVATE)
+        self.window.drag_dest_set(Gtk.DestDefaults.DROP, [('upnp/metadata', 0, 1)], Gdk.DragAction.DEFAULT | Gdk.DragAction.PRIVATE)
         self.window.connect('drag_motion', self.motion_cb)
         self.window.connect('drag_drop', self.drop_cb)
         self.window.connect("drag_data_received", self.received_cb)
 
-        vbox = gtk.VBox(homogeneous=False, spacing=10)
+        vbox = Gtk.VBox(homogeneous=False, spacing=10)
 
-        hbox = gtk.HBox(homogeneous=False, spacing=10)
+        hbox = Gtk.HBox(homogeneous=False, spacing=10)
         hbox.set_border_width(2)
-        self.album_art_image = gtk.Image()
+        self.album_art_image = Gtk.Image()
         icon = resource_filename(__name__, os.path.join('icons','blankalbum.png'))
-        self.blank_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.blank_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         self.album_art_image.set_from_pixbuf(self.blank_icon)
         hbox.pack_start(self.album_art_image,False,False,2)
 
-        #icon_loader = gtk.gdk.PixbufLoader()
+        #icon_loader = GdkPixbuf.PixbufLoader()
         #icon_loader.write(urllib.urlopen(str(res.data)).read())
         #icon_loader.close()
 
         vbox.pack_start(hbox,False,False,2)
-        textbox = gtk.VBox(homogeneous=False, spacing=10)
-        self.title_text = gtk.Label("<b>title</b>")
+        textbox = Gtk.VBox(homogeneous=False, spacing=10)
+        self.title_text = Gtk.Label(label="<b>title</b>")
         self.title_text.set_use_markup(True)
         textbox.pack_start(self.title_text,False,False,2)
-        self.album_text = gtk.Label("album")
+        self.album_text = Gtk.Label(label="album")
         self.album_text.set_use_markup(True)
         textbox.pack_start(self.album_text,False,False,2)
-        self.artist_text = gtk.Label("artist")
+        self.artist_text = Gtk.Label(label="artist")
         self.artist_text.set_use_markup(True)
         textbox.pack_start(self.artist_text,False,False,2)
         hbox.pack_start(textbox,False,False,2)
 
-        seekbox = gtk.HBox(homogeneous=False, spacing=10)
-        self.position_min_text = gtk.Label("0:00")
+        seekbox = Gtk.HBox(homogeneous=False, spacing=10)
+        self.position_min_text = Gtk.Label(label="0:00")
         self.position_min_text.set_use_markup(True)
         seekbox.pack_start(self.position_min_text,False,False,2)
-        adjustment=gtk.Adjustment(value=0, lower=0, upper=240, step_incr=1,page_incr=20)#, page_size=20)
-        self.position_scale = gtk.HScale(adjustment=adjustment)
+        adjustment=Gtk.Adjustment(value=0, lower=0, upper=240, step_incr=1,page_incr=20)#, page_size=20)
+        self.position_scale = Gtk.HScale(adjustment=adjustment)
         self.position_scale.set_draw_value(True)
-        self.position_scale.set_value_pos(gtk.POS_BOTTOM)
+        self.position_scale.set_value_pos(Gtk.PositionType.BOTTOM)
         self.position_scale.set_sensitive(False)
         self.position_scale.connect("format-value", self.format_position)
         self.position_scale.connect('change-value',self.position_changed)
         seekbox.pack_start(self.position_scale,True,True,2)
-        self.position_max_text = gtk.Label("0:00")
+        self.position_max_text = Gtk.Label(label="0:00")
         self.position_max_text.set_use_markup(True)
         seekbox.pack_end(self.position_max_text,False,False,2)
         vbox.pack_start(seekbox,False,False,2)
 
-        buttonbox = gtk.HBox(homogeneous=False, spacing=10)
+        buttonbox = Gtk.HBox(homogeneous=False, spacing=10)
         self.prev_button = self.make_button('media-skip-backward.png',self.skip_backward,sensitive=False)
         buttonbox.pack_start(self.prev_button,False,False,2)
         self.seek_backward_button = self.make_button('media-seek-backward.png',callback=self.seek_backward,sensitive=False)
@@ -100,40 +100,40 @@ class MediaRendererWidget(log.Loggable):
         self.next_button = self.make_button('media-skip-forward.png',self.skip_forward,sensitive=False)
         buttonbox.pack_start(self.next_button,False,False,2)
 
-        hbox = gtk.HBox(homogeneous=False, spacing=10)
+        hbox = Gtk.HBox(homogeneous=False, spacing=10)
         #hbox.set_size_request(240,-1)
-        adjustment=gtk.Adjustment(value=0, lower=0, upper=100, step_incr=1,page_incr=20)#, page_size=20)
-        self.volume_scale = gtk.HScale(adjustment=adjustment)
+        adjustment=Gtk.Adjustment(value=0, lower=0, upper=100, step_incr=1,page_incr=20)#, page_size=20)
+        self.volume_scale = Gtk.HScale(adjustment=adjustment)
         self.volume_scale.set_size_request(140,-1)
         self.volume_scale.set_draw_value(False)
         self.volume_scale.connect('change-value',self.volume_changed)
         hbox.pack_start(self.volume_scale,False,False,2)
-        button = gtk.Button()
-        self.volume_image = gtk.Image()
+        button = Gtk.Button()
+        self.volume_image = Gtk.Image()
         icon = resource_filename(__name__, os.path.join('icons','audio-volume-low.png'))
-        self.volume_low_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.volume_low_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         self.volume_image.set_from_pixbuf(self.volume_low_icon)
         button.set_image(self.volume_image)
         button.connect("clicked", self.mute)
 
         icon = resource_filename(__name__, os.path.join('icons','audio-volume-medium.png'))
-        self.volume_medium_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.volume_medium_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','audio-volume-high.png'))
-        self.volume_high_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.volume_high_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','audio-volume-muted.png'))
-        self.volume_muted_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.volume_muted_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         hbox.pack_end(button,False,False,2)
 
         buttonbox.pack_end(hbox,False,False,2)
         vbox.pack_start(buttonbox,False,False,2)
 
-        self.pause_button_image = gtk.Image()
+        self.pause_button_image = Gtk.Image()
         icon = resource_filename(__name__, os.path.join('icons','media-playback-pause.png'))
-        icon = gtk.gdk.pixbuf_new_from_file(icon)
+        icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         self.pause_button_image.set_from_pixbuf(icon)
         self.start_button_image = self.start_button.get_image()
 
-        self.status_bar = gtk.Statusbar()
+        self.status_bar = Gtk.Statusbar()
         context_id = self.status_bar.get_context_id("Statusbar")
         vbox.pack_end(self.status_bar,False,False,2)
 
@@ -170,7 +170,7 @@ class MediaRendererWidget(log.Loggable):
 
     def motion_cb(self,wid, context, x, y, time):
         #print 'drag_motion'
-        context.drag_status(gtk.gdk.ACTION_COPY, time)
+        context.drag_status(Gdk.DragAction.COPY, time)
         return True
 
     def drop_cb(self,wid, context, x, y, time):
@@ -213,9 +213,9 @@ class MediaRendererWidget(log.Loggable):
 
     def make_button(self,icon,callback=None,sensitive=True):
         icon = resource_filename(__name__, os.path.join('icons',icon))
-        icon = gtk.gdk.pixbuf_new_from_file(icon)
-        button = gtk.Button()
-        image = gtk.Image()
+        icon = GdkPixbuf.Pixbuf.new_from_file(icon)
+        button = Gtk.Button()
+        image = Gtk.Image()
         image.set_from_pixbuf(icon)
         button.set_image(image)
         button.connect("clicked", lambda x: callback())
@@ -247,11 +247,11 @@ class MediaRendererWidget(log.Loggable):
 
                         def got_icon(icon):
                             icon = icon[0]
-                            icon_loader = gtk.gdk.PixbufLoader()
+                            icon_loader = GdkPixbuf.PixbufLoader()
                             icon_loader.write(icon)
                             icon_loader.close()
                             icon = icon_loader.get_pixbuf()
-                            icon = icon.scale_simple(128,128,gtk.gdk.INTERP_BILINEAR)
+                            icon = icon.scale_simple(128,128,GdkPixbuf.InterpType.BILINEAR)
                             self.album_art_image.set_from_pixbuf(icon)
 
                         if item.upnp_class.startswith('object.item.audioItem') and item.albumArtURI != None:

@@ -10,9 +10,9 @@ import time
 
 from pkg_resources import resource_filename
 
-import pygtk
-pygtk.require("2.0")
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 from twisted.internet import reactor
 
@@ -36,53 +36,53 @@ class Inspector(log.Loggable):
                   'logfile':logfile}
         self.coherence = Coherence(config)
         self.controlpoint = ControlPoint(self.coherence,auto_client=[])
-        window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         window.connect("delete_event", lambda x,y: reactor.stop())
         window.set_default_size(350,700)
         window.set_title('UPnP Inspector')
         icon = resource_filename(__name__, os.path.join('icons','inspector-icon.png'))
-        gtk.window_set_default_icon_from_file(icon)
+        Gtk.window_set_default_icon_from_file(icon)
 
-        vbox = gtk.VBox(homogeneous=False, spacing=0)
-        menu_bar = gtk.MenuBar()
-        menu = gtk.Menu()
-        refresh_item = gtk.MenuItem("Rediscover Devices")
+        vbox = Gtk.VBox(homogeneous=False, spacing=0)
+        menu_bar = Gtk.MenuBar()
+        menu = Gtk.Menu()
+        refresh_item = Gtk.MenuItem("Rediscover Devices")
         refresh_item.connect("activate", self.refresh_devices)
         menu.append(refresh_item)
-        menu.append(gtk.SeparatorMenuItem())
-        quit_item = gtk.MenuItem("Quit")
+        menu.append(Gtk.SeparatorMenuItem())
+        quit_item = Gtk.MenuItem("Quit")
         menu.append(quit_item)
         quit_item.connect("activate", lambda x: reactor.stop())
 
-        file_menu = gtk.MenuItem("File")
+        file_menu = Gtk.MenuItem("File")
         file_menu.set_submenu(menu)
         menu_bar.append(file_menu)
 
-        menu = gtk.Menu()
-        self.show_details_item = gtk.CheckMenuItem("show details")
+        menu = Gtk.Menu()
+        self.show_details_item = Gtk.CheckMenuItem("show details")
         menu.append(self.show_details_item)
         self.show_details_item.connect("activate", self.show_details_widget, "view.details")
-        self.show_events_item = gtk.CheckMenuItem("show events")
+        self.show_events_item = Gtk.CheckMenuItem("show events")
         menu.append(self.show_events_item)
         self.show_events_item.connect("activate", self.show_events_widget, "view.events")
-        self.show_log_item = gtk.CheckMenuItem("show global log")
+        self.show_log_item = Gtk.CheckMenuItem("show global log")
         menu.append(self.show_log_item)
         self.show_log_item.connect("activate", self.show_log_widget, "view.log")
         #self.show_log_item.set_sensitive(False)
-        view_menu = gtk.MenuItem("View")
+        view_menu = Gtk.MenuItem("View")
         view_menu.set_submenu(menu)
         menu_bar.append(view_menu)
 
-        test_menu = gtk.MenuItem("Test")
+        test_menu = Gtk.MenuItem("Test")
         test_menu.set_sensitive(False)
         #test_menu.set_submenu(menu)
         menu_bar.append(test_menu)
 
-        menu = gtk.Menu()
-        item = gtk.MenuItem("Info")
+        menu = Gtk.Menu()
+        item = Gtk.MenuItem("Info")
         menu.append(item)
         item.connect("activate", self.show_about_widget, "help.info")
-        help_menu = gtk.MenuItem("Help")
+        help_menu = Gtk.MenuItem("Help")
         help_menu.set_submenu(menu)
         menu_bar.append(help_menu)
 

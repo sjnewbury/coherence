@@ -10,9 +10,9 @@ import os
 import gettext
 
 import hildon
-import pygtk
-pygtk.require('2.0')
-import gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 from pkg_resources import resource_filename
 
@@ -50,16 +50,16 @@ class MediaServerBrowseView(hildon.GtkTreeView):
     MS_TOOLTIP_COLUMN = 8
 
     def __init__(self, window, coherence, device):
-        hildon.GtkTreeView.__init__(self,gtk.HILDON_UI_MODE_NORMAL)
+        hildon.GtkTreeView.__init__(self,Gtk.HILDON_UI_MODE_NORMAL)
         self._window = window
         self.coherence = coherence
         self.device = device
-        model = gtk.TreeStore(str, str, str, int, str, str, gtk.gdk.Pixbuf,
-                              str, gtk.gdk.Pixbuf)
+        model = Gtk.TreeStore(str, str, str, int, str, str, GdkPixbuf.Pixbuf,
+                              str, GdkPixbuf.Pixbuf)
         self.set_model(model)
-        column = gtk.TreeViewColumn('Items')
-        icon_cell = gtk.CellRendererPixbuf()
-        text_cell = gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('Items')
+        icon_cell = Gtk.CellRendererPixbuf()
+        text_cell = Gtk.CellRendererText()
 
         column.pack_start(icon_cell, False)
         column.pack_start(text_cell, True)
@@ -73,13 +73,13 @@ class MediaServerBrowseView(hildon.GtkTreeView):
         self.connect("row-activated", self.row_got_activated)
 
         icon = resource_filename('mirabeau', os.path.join('data', 'icons','folder.png'))
-        self.folder_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.folder_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename('mirabeau', os.path.join('data', 'icons','audio-x-generic.png'))
-        self.audio_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.audio_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename('mirabeau', os.path.join('data', 'icons','video-x-generic.png'))
-        self.video_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.video_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename('mirabeau', os.path.join('data', 'icons','image-x-generic.png'))
-        self.image_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.image_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
 
         self.load()
 
@@ -167,7 +167,7 @@ class MediaServerBrowseView(hildon.GtkTreeView):
             return
         dialog = dialogs.SelectMRDialog(self._window, self.coherence)
         response = dialog.run()
-        if response == gtk.RESPONSE_ACCEPT:
+        if response == Gtk.ResponseType.ACCEPT:
             media_render_device = dialog.get_media_renderer()
             window = media_renderer.MediaRendererWindow(self.coherence,
                                                         media_render_device)

@@ -18,8 +18,8 @@ from StringIO import StringIO
 import tokenize
 
 import pygst
-pygst.require('0.10')
-import gst
+pyGst.require('0.10')
+from gi.repository import Gst
 
 import coherence.extern.louie as louie
 
@@ -82,12 +82,12 @@ class Player(log.Loggable):
             self.sink = None
 
             if mimetype == 'application/ogg':
-                self.player = gst.parse_launch('gnomevfssrc name=source ! oggdemux ! ivorbisdec ! audioconvert ! dsppcmsink name=sink')
+                self.player = Gst.parse_launch('gnomevfssrc name=source ! oggdemux ! ivorbisdec ! audioconvert ! dsppcmsink name=sink')
                 self.player.set_name('oggplayer')
                 self.set_volume = self.set_volume_dsp_pcm_sink
                 self.get_volume = self.get_volume_dsp_pcm_sink
             else:
-                self.player = gst.parse_launch('gnomevfssrc name=source ! id3lib ! dspmp3sink name=sink')
+                self.player = Gst.parse_launch('gnomevfssrc name=source ! id3lib ! dspmp3sink name=sink')
                 self.player.set_name('mp3player')
                 self.set_volume = self.set_volume_dsp_mp3_sink
                 self.get_volume = self.get_volume_dsp_mp3_sink
@@ -98,7 +98,7 @@ class Player(log.Loggable):
             self.unmute = self.unmute_hack
             self.get_mute = self.get_mute_hack
         else:
-            self.player = gst.element_factory_make('playbin2', 'player')
+            self.player = Gst.ElementFactory.make('playbin2', 'player')
             self.player_uri = 'uri'
             self.source = self.sink = self.player
             self.set_volume = self.set_volume_playbin
@@ -106,10 +106,10 @@ class Player(log.Loggable):
             self.mute = self.mute_playbin
             self.unmute = self.unmute_playbin
             self.get_mute = self.get_mute_playbin
-            audio_sink = gst.element_factory_make(self.audio_sink_name)
+            audio_sink = Gst.ElementFactory.make(self.audio_sink_name)
             self._set_props(audio_sink, self.audio_sink_options)
             self.player.set_property("audio-sink", audio_sink)
-            video_sink = gst.element_factory_make(self.video_sink_name)
+            video_sink = Gst.ElementFactory.make(self.video_sink_name)
             self._set_props(video_sink, self.video_sink_options)
             self.player.set_property("video-sink", video_sink)
 
@@ -246,54 +246,54 @@ class Player(log.Loggable):
         #print "from", message.src.get_name()
         t = message.type
         #print t
-        if t == gst.MESSAGE_ERROR:
+        if t == Gst.MessageType.ERROR:
             err, debug = message.parse_error()
             self.warning("Gstreamer error: %s,%r" % (err.message, debug))
             if self.playing == True:
                 self.seek('-0')
-            #self.player.set_state(gst.STATE_READY)
-        elif t == gst.MESSAGE_TAG:
+            #self.player.set_state(Gst.State.READY)
+        elif t == Gst.MessageType.TAG:
             for key in message.parse_tag().keys():
                 self.tags[key] = message.structure[key]
             #print self.tags
-        elif t == gst.MESSAGE_STATE_CHANGED:
+        elif t == Gst.MessageType.STATE_CHANGED:
             if message.src == self.player:
                 old, new, pending = message.parse_state_changed()
                 #print "player (%s) state_change:" %(message.src.get_path_string()), old, new, pending
-                if new == gst.STATE_PLAYING:
+                if new == Gst.State.PLAYING:
                     self.playing = True
                     self.update_LC.start( 1, False)
                     self.update()
-                elif old == gst.STATE_PLAYING:
+                elif old == Gst.State.PLAYING:
                     self.playing = False
                     try:
                         self.update_LC.stop()
                     except:
                         pass
                     self.update()
-                #elif new == gst.STATE_READY:
+                #elif new == Gst.State.READY:
                 #    self.update()
 
-        elif t == gst.MESSAGE_EOS:
+        elif t == Gst.MessageType.EOS:
             self.debug("reached file end")
             self.seek('-0')
-            self.update(message=gst.MESSAGE_EOS)
+            self.update(message=Gst.MessageType.EOS)
 
     def query_position( self):
         #print "query_position"
         try:
-            position, format = self.player.query_position(gst.FORMAT_TIME)
+            position, format = self.player.query_position(Gst.Format.TIME)
         except:
-            #print "CLOCK_TIME_NONE", gst.CLOCK_TIME_NONE
-            position = gst.CLOCK_TIME_NONE
+            #print "CLOCK_TIME_NONE", Gst.CLOCK_TIME_NONE
+            position = Gst.CLOCK_TIME_NONE
             position = 0
         #print position
 
         if self.duration == None:
             try:
-                self.duration, format = self.player.query_duration(gst.FORMAT_TIME)
+                self.duration, format = self.player.query_duration(Gst.Format.TIME)
             except:
-                self.duration = gst.CLOCK_TIME_NONE
+                self.duration = Gst.CLOCK_TIME_NONE
                 self.duration = 0
                 #import traceback
                 #print traceback.print_exc()
@@ -320,7 +320,7 @@ class Player(log.Loggable):
     def load( self, uri, mimetype):
         self.debug("load --> %r %r" % (uri, mimetype))
         _,state,_ = self.player.get_state()
-        if( state == gst.STATE_PLAYING or state == gst.STATE_PAUSED):
+        if( state == Gst.State.PLAYING or state == Gst.State.PAUSED):
             self.stop()
 
         #print "player -->", self.player.get_name()
@@ -328,13 +328,13 @@ class Player(log.Loggable):
             self.create_pipeline(mimetype)
 
 
-        self.player.set_state(gst.STATE_READY)
+        self.player.set_state(Gst.State.READY)
         self.set_uri(uri)
         self.player_clean = True
         self.duration = None
         self.mimetype = mimetype
         self.tags = {}
-        #self.player.set_state(gst.STATE_PAUSED)
+        #self.player.set_state(Gst.State.PAUSED)
         #self.update()
         self.debug("load <--")
         self.play()
@@ -347,27 +347,27 @@ class Player(log.Loggable):
         if self.player.get_name() != 'player':
             if self.player_clean == False:
                 #print "rebuild pipeline"
-                self.player.set_state(gst.STATE_NULL)
+                self.player.set_state(Gst.State.NULL)
 
                 self.create_pipeline(mimetype)
 
                 self.set_uri(uri)
-                self.player.set_state(gst.STATE_READY)
+                self.player.set_state(Gst.State.READY)
         else:
             self.player_clean = True
-        self.player.set_state(gst.STATE_PLAYING)
+        self.player.set_state(Gst.State.PLAYING)
         self.debug("play <--")
 
     def pause(self):
         self.debug("pause --> %r" % self.get_uri())
-        self.player.set_state(gst.STATE_PAUSED)
+        self.player.set_state(Gst.State.PAUSED)
         self.debug("pause <--")
 
     def stop(self):
         self.debug("stop --> %r" % self.get_uri())
         self.seek('-0')
-        self.player.set_state(gst.STATE_READY)
-        self.update(message=gst.MESSAGE_EOS)
+        self.player.set_state(Gst.State.READY)
+        self.update(message=Gst.MessageType.EOS)
         self.debug("stop <-- %r " % self.get_uri())
 
     def seek(self, location):
@@ -378,8 +378,8 @@ class Player(log.Loggable):
         """
 
         _,state,_ = self.player.get_state()
-        if state != gst.STATE_PAUSED:
-            self.player.set_state(gst.STATE_PAUSED)
+        if state != Gst.State.PAUSED:
+            self.player.set_state(Gst.State.PAUSED)
         l = long(location)*1000000000
         p = self.query_position()
 
@@ -398,16 +398,16 @@ class Player(log.Loggable):
 
         self.debug("seeking to %r" % l)
         """
-        self.player.seek( 1.0, gst.FORMAT_TIME,
-            gst.SEEK_FLAG_FLUSH | gst.SEEK_FLAG_ACCURATE,
-            gst.SEEK_TYPE_SET, l,
-            gst.SEEK_TYPE_NONE, 0)
+        self.player.seek( 1.0, Gst.Format.TIME,
+            Gst.SeekFlags.FLUSH | Gst.SeekFlags.ACCURATE,
+            Gst.SeekType.SET, l,
+            Gst.SeekType.NONE, 0)
 
         """
-        event = gst.event_new_seek(1.0, gst.FORMAT_TIME,
-            gst.SEEK_FLAG_FLUSH | gst.SEEK_FLAG_KEY_UNIT,
-            gst.SEEK_TYPE_SET, l,
-            gst.SEEK_TYPE_NONE, 0)
+        event = Gst.Event.new_seek(1.0, Gst.Format.TIME,
+            Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT,
+            Gst.SeekType.SET, l,
+            Gst.SeekType.NONE, 0)
 
         res = self.player.send_event(event)
         if res:
@@ -424,14 +424,14 @@ class Player(log.Loggable):
             except:
                 pass
             if self.player.get_name() != 'player':
-                self.player.set_state(gst.STATE_NULL)
+                self.player.set_state(Gst.State.NULL)
                 self.player_clean = False
             elif content_type != "image":
-                self.player.set_state(gst.STATE_READY)
+                self.player.set_state(Gst.State.READY)
             self.update()
         else:
             self.player.set_state(state)
-            if state == gst.STATE_PAUSED:
+            if state == Gst.State.PAUSED:
                 self.update()
 
 
@@ -498,14 +498,14 @@ class GStreamerPlayer(log.Loggable,Plugin):
         connection_manager = self.server.connection_manager_server
         av_transport = self.server.av_transport_server
         conn_id = connection_manager.lookup_avt_id(self.current_connection_id)
-        if current == gst.STATE_PLAYING:
+        if current == Gst.State.PLAYING:
             state = 'playing'
             av_transport.set_variable(conn_id, 'TransportState', 'PLAYING')
-        elif current == gst.STATE_PAUSED:
+        elif current == Gst.State.PAUSED:
             state = 'paused'
             av_transport.set_variable(conn_id, 'TransportState',
                                       'PAUSED_PLAYBACK')
-        elif self.playcontainer != None and message == gst.MESSAGE_EOS and \
+        elif self.playcontainer != None and message == Gst.MessageType.EOS and \
              self.playcontainer[0]+1 < len(self.playcontainer[2]):
             state = 'transitioning'
             av_transport.set_variable(conn_id, 'TransportState', 'TRANSITIONING')
@@ -535,7 +535,7 @@ class GStreamerPlayer(log.Loggable,Plugin):
             else:
                 state = 'idle'
                 av_transport.set_variable(conn_id, 'TransportState', 'STOPPED')
-        elif message == gst.MESSAGE_EOS and \
+        elif message == Gst.MessageType.EOS and \
              len(av_transport.get_variable('NextAVTransportURI').value) > 0:
             state = 'transitioning'
             av_transport.set_variable(conn_id, 'TransportState', 'TRANSITIONING')
@@ -673,7 +673,7 @@ class GStreamerPlayer(log.Loggable,Plugin):
 
         self.server.av_transport_server.set_variable(connection_id, 'CurrentTransportActions',transport_actions)
 
-        if state == gst.STATE_PLAYING:
+        if state == Gst.State.PLAYING:
             self.info("was playing...")
             self.play()
         self.update()
@@ -700,9 +700,9 @@ class GStreamerPlayer(log.Loggable,Plugin):
                 except:
                     pass
 
-            if self.player.get_state()[1] == gst.STATE_PLAYING:
+            if self.player.get_state()[1] == Gst.State.PLAYING:
                 r[u'state'] = u'playing'
-            elif self.player.get_state()[1] == gst.STATE_PAUSED:
+            elif self.player.get_state()[1] == Gst.State.PAUSED:
                 r[u'state'] = u'paused'
             else:
                 r[u'state'] = u'idle'
@@ -717,7 +717,7 @@ class GStreamerPlayer(log.Loggable,Plugin):
         self.info('Stopping: %r' % self.player.get_uri())
         if self.player.get_uri() == None:
             return
-        if self.player.get_state()[1] in [gst.STATE_PLAYING,gst.STATE_PAUSED]:
+        if self.player.get_state()[1] in [Gst.State.PLAYING,Gst.State.PAUSED]:
             self.player.stop()
             if silent is True:
                 self.server.av_transport_server.set_variable(self.server.connection_manager_server.lookup_avt_id(self.current_connection_id), 'TransportState', 'STOPPED')

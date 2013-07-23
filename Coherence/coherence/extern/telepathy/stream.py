@@ -1,5 +1,5 @@
 import socket
-import gobject
+from gi.repository import GObject
 
 
 class TrivialStream:
@@ -38,7 +38,7 @@ class TrivialStreamServer(TrivialStream):
         print "Trivial Server launched on socket", self.socket_address
         self._socket.listen(1)
 
-        gobject.timeout_add(1000, self.accept_client, self._socket)
+        GObject.timeout_add(1000, self.accept_client, self._socket)
 
     def accept_client(self, s):
         try:

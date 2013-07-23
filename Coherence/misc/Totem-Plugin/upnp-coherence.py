@@ -3,9 +3,9 @@
 
 # Copyright 2008, Frank Scholz <coherence@beebits.net>
 
-import pygtk
-pygtk.require("2.0")
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 from coherence.ui.av_widgets import TreeWidget
 from coherence.ui.av_widgets import UDN_COLUMN,UPNP_CLASS_COLUMN,SERVICE_COLUMN
@@ -21,7 +21,7 @@ class UPnPClient(totem.Plugin):
         self.ui.cb_item_right_click = self.button_pressed
         self.ui.window.show_all()
         selection = self.ui.treeview.get_selection()
-        selection.set_mode(gtk.SELECTION_MULTIPLE)
+        selection.set_mode(Gtk.SelectionMode.MULTIPLE)
 
     def button_pressed(self, widget, event):
         if event.button == 3:
@@ -71,25 +71,25 @@ class UPnPClient(totem.Plugin):
                 self.totem_object.action_remote(totem.REMOTE_COMMAND_PLAY,url)
 
         if not hasattr(self, 'context_no_delete'):
-            self.context_no_delete = gtk.Menu()
-            play_menu = gtk.MenuItem("Play")
+            self.context_no_delete = Gtk.Menu()
+            play_menu = Gtk.MenuItem("Play")
             play_menu.connect("activate", action, 'item.play')
-            enqueue_menu = gtk.MenuItem("Enqueue")
+            enqueue_menu = Gtk.MenuItem("Enqueue")
             enqueue_menu.connect("activate", action, 'item.enqueue')
             self.context_no_delete.append(play_menu)
             self.context_no_delete.append(enqueue_menu)
             self.context_no_delete.show_all()
 
         if not hasattr(self, 'context_with_delete'):
-            self.context_with_delete = gtk.Menu()
-            play_menu = gtk.MenuItem("Play")
+            self.context_with_delete = Gtk.Menu()
+            play_menu = Gtk.MenuItem("Play")
             play_menu.connect("activate", action, 'item.play')
-            enqueue_menu = gtk.MenuItem("Enqueue")
+            enqueue_menu = Gtk.MenuItem("Enqueue")
             enqueue_menu.connect("activate", action, 'item.enqueue')
             self.context_with_delete.append(play_menu)
             self.context_with_delete.append(enqueue_menu)
-            self.context_with_delete.append(gtk.SeparatorMenuItem())
-            menu = gtk.MenuItem("Delete")
+            self.context_with_delete.append(Gtk.SeparatorMenuItem())
+            menu = Gtk.MenuItem("Delete")
             menu.connect("activate", action, 'item.delete')
             self.context_with_delete.append(menu)
             self.context_with_delete.show_all()

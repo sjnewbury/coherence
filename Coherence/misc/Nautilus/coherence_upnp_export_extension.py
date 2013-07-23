@@ -70,11 +70,11 @@ try:
             self.window = None
 
         def ui_create(self):
-            import pygtk
-            pygtk.require("2.0")
-            import gtk
+            import gi
+            gi.require_version("Gtk", "3.0")
+            from gi.repository import Gtk
 
-            self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+            self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
             self.window.set_default_size(350, 300)
             self.window.set_title('Coherence DLNA/UPnP Share')
 

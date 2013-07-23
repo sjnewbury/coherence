@@ -10,17 +10,17 @@ from twisted.internet import reactor
 
 from coherence import log
 
-import pango
+from gi.repository import Pango
 
 # Clutter
-import clutter
-from clutter import cogl
+from gi.repository import Clutter
+from gi.repository import Cogl
 
-class TextureReflection (clutter.Clone):
+class TextureReflection (Clutter.Clone):
     # taken from the reflection.py example of pyclutter
 
     """
-    TextureReflection (clutter.Clone)
+    TextureReflection (Clutter.Clone)
 
     An actor that paints a reflection of a texture. The
     height of the reflection can be set in pixels. If set
@@ -33,7 +33,7 @@ class TextureReflection (clutter.Clone):
     __gtype_name__ = 'TextureReflection'
 
     def __init__ (self, parent):
-        clutter.Clone.__init__(self, parent)
+        Clutter.Clone.__init__(self, parent)
         self._reflection_height = -1
 
     def set_reflection_height (self, height):
@@ -67,15 +67,15 @@ class TextureReflection (clutter.Clone):
         # the vertices are a 6-tuple composed of:
         #  x, y, z: coordinates inside Clutter modelview
         #  tx, ty: texture coordinates
-        #  color: a clutter.Color for the vertex
+        #  color: a Clutter.Color for the vertex
         #
         # to paint the reflection of the parent texture we paint
         # the texture using four vertices in clockwise order, with
         # the upper left and the upper right at full opacity and
         # the lower right and lower left and 0 opacity; OpenGL will
         # do the gradient for us
-        color1 = cogl.color_premultiply((1, 1, 1, opacity/255.))
-        color2 = cogl.color_premultiply((1, 1, 1, 0))
+        color1 = Cogl.color_premultiply((1, 1, 1, opacity/255.))
+        color2 = Cogl.color_premultiply((1, 1, 1, 0))
         vertices = ( \
             (    0,        0, 0, 0.0, 1.0,   color1), \
             (width,        0, 0, 1.0, 1.0,   color1), \
@@ -83,12 +83,12 @@ class TextureReflection (clutter.Clone):
             (    0, r_height, 0, 0.0, 1.0-rty, color2), \
         )
 
-        cogl.push_matrix()
+        Cogl.push_matrix()
 
-        cogl.set_source_texture(cogl_tex)
-        cogl.polygon(vertices=vertices, use_color=True)
+        Cogl.set_source_texture(cogl_tex)
+        Cogl.polygon(vertices=vertices, use_color=True)
 
-        cogl.pop_matrix()
+        Cogl.pop_matrix()
 
 
 class Canvas(log.Loggable):
@@ -99,7 +99,7 @@ class Canvas(log.Loggable):
         self.fullscreen = fullscreen
         self.transition = 'FADE'
 
-        self.stage = clutter.Stage()
+        self.stage = Clutter.Stage()
         if self.fullscreen == True:
             self.stage.set_fullscreen(True)
         else:
@@ -111,22 +111,22 @@ class Canvas(log.Loggable):
         display_width = size[0]*0.7
         display_height = size[1]*0.7
 
-        self.stage.set_color(clutter.Color(0,0,0))
+        self.stage.set_color(Clutter.Color(0,0,0))
         if self.fullscreen == True:
             self.stage.connect('button-press-event', lambda x,y: reactor.stop())
         self.stage.connect('destroy', lambda x: reactor.stop())
         #self.stage.connect('key-press-event', self.process_key)
 
-        self.texture_group = clutter.Group()
+        self.texture_group = Clutter.Group()
         self.stage.add(self.texture_group)
 
-        self.texture_1 = clutter.Texture()
+        self.texture_1 = Clutter.Texture()
         self.texture_1.set_opacity(0)
         self.texture_1.set_keep_aspect_ratio(True)
         self.texture_1.set_size(display_width,display_height)
         self.texture_1.haz_image = False
 
-        self.texture_2 = clutter.Texture()
+        self.texture_2 = Clutter.Texture()
         self.texture_2.set_opacity(0)
         self.texture_2.set_keep_aspect_ratio(True)
         self.texture_2.set_size(display_width,display_height)
@@ -160,41 +160,41 @@ class Canvas(log.Loggable):
         def timeline_in_2_comleted(x):
             self.info("timeline_in_2_comleted")
 
-        self.texture_1.transition_fade_out_timeline = clutter.Timeline(2000)
+        self.texture_1.transition_fade_out_timeline = Clutter.Timeline(2000)
         self.texture_1.transition_fade_out_timeline.connect('completed',timeline_out_1_comleted)
-        alpha=clutter.Alpha(self.texture_1.transition_fade_out_timeline, clutter.EASE_OUT_SINE)
-        self.fade_out_texture_behaviour_1 = clutter.BehaviourOpacity(alpha=alpha, opacity_start=255, opacity_end=0)
+        alpha=Clutter.Alpha(self.texture_1.transition_fade_out_timeline, Clutter.AnimationMode.OUT_SINE)
+        self.fade_out_texture_behaviour_1 = Clutter.BehaviourOpacity(alpha=alpha, opacity_start=255, opacity_end=0)
         self.fade_out_texture_behaviour_1.apply(self.texture_1)
-        self.fade_out_reflection_behaviour_1 = clutter.BehaviourOpacity(alpha=alpha, opacity_start=100, opacity_end=0)
+        self.fade_out_reflection_behaviour_1 = Clutter.BehaviourOpacity(alpha=alpha, opacity_start=100, opacity_end=0)
         self.fade_out_reflection_behaviour_1.apply(self.texture_1.reflection)
         self.texture_1.transition_fade_out_timeline.add_marker_at_time('out_nearly_finished', 500)
 
-        self.texture_1.transition_fade_in_timeline = clutter.Timeline(2000)
+        self.texture_1.transition_fade_in_timeline = Clutter.Timeline(2000)
         self.texture_1.transition_fade_in_timeline.connect('completed',timeline_in_1_comleted)
-        alpha=clutter.Alpha(self.texture_1.transition_fade_in_timeline, clutter.EASE_OUT_SINE)
-        self.fade_in_texture_behaviour_1 = clutter.BehaviourOpacity(alpha=alpha, opacity_start=0, opacity_end=255)
+        alpha=Clutter.Alpha(self.texture_1.transition_fade_in_timeline, Clutter.AnimationMode.OUT_SINE)
+        self.fade_in_texture_behaviour_1 = Clutter.BehaviourOpacity(alpha=alpha, opacity_start=0, opacity_end=255)
         self.fade_in_texture_behaviour_1.apply(self.texture_1)
-        self.fade_in_reflection_behaviour_1 = clutter.BehaviourOpacity(alpha=alpha, opacity_start=0, opacity_end=100)
+        self.fade_in_reflection_behaviour_1 = Clutter.BehaviourOpacity(alpha=alpha, opacity_start=0, opacity_end=100)
         self.fade_in_reflection_behaviour_1.apply(self.texture_1.reflection)
 
-        self.texture_2.transition_fade_out_timeline = clutter.Timeline(2000)
+        self.texture_2.transition_fade_out_timeline = Clutter.Timeline(2000)
         self.texture_2.transition_fade_out_timeline.connect('completed',timeline_out_2_comleted)
-        alpha=clutter.Alpha(self.texture_2.transition_fade_out_timeline, clutter.EASE_OUT_SINE)
-        self.fade_out_texture_behaviour_2 = clutter.BehaviourOpacity(alpha=alpha, opacity_start=255, opacity_end=0)
+        alpha=Clutter.Alpha(self.texture_2.transition_fade_out_timeline, Clutter.AnimationMode.OUT_SINE)
+        self.fade_out_texture_behaviour_2 = Clutter.BehaviourOpacity(alpha=alpha, opacity_start=255, opacity_end=0)
         self.fade_out_texture_behaviour_2.apply(self.texture_2)
-        self.fade_out_reflection_behaviour_2 = clutter.BehaviourOpacity(alpha=alpha, opacity_start=100, opacity_end=0)
+        self.fade_out_reflection_behaviour_2 = Clutter.BehaviourOpacity(alpha=alpha, opacity_start=100, opacity_end=0)
         self.fade_out_reflection_behaviour_2.apply(self.texture_2.reflection)
         self.texture_2.transition_fade_out_timeline.add_marker_at_time('out_nearly_finished', 500)
 
-        self.texture_2.transition_fade_in_timeline = clutter.Timeline(2000)
+        self.texture_2.transition_fade_in_timeline = Clutter.Timeline(2000)
         self.texture_2.transition_fade_in_timeline.connect('completed',timeline_in_2_comleted)
-        alpha=clutter.Alpha(self.texture_2.transition_fade_in_timeline, clutter.EASE_OUT_SINE)
-        self.fade_in_texture_behaviour_2 = clutter.BehaviourOpacity(alpha=alpha, opacity_start=0, opacity_end=255)
+        alpha=Clutter.Alpha(self.texture_2.transition_fade_in_timeline, Clutter.AnimationMode.OUT_SINE)
+        self.fade_in_texture_behaviour_2 = Clutter.BehaviourOpacity(alpha=alpha, opacity_start=0, opacity_end=255)
         self.fade_in_texture_behaviour_2.apply(self.texture_2)
-        self.fade_in_reflection_behaviour_2 = clutter.BehaviourOpacity(alpha=alpha, opacity_start=0, opacity_end=100)
+        self.fade_in_reflection_behaviour_2 = Clutter.BehaviourOpacity(alpha=alpha, opacity_start=0, opacity_end=100)
         self.fade_in_reflection_behaviour_2.apply(self.texture_2.reflection)
 
-        self.texture_1.fading_score = clutter.Score()
+        self.texture_1.fading_score = Clutter.Score()
         self.texture_1.fading_score.append(timeline=self.texture_2.transition_fade_out_timeline)
         self.texture_1.fading_score.append_at_marker(timeline=self.texture_1.transition_fade_in_timeline,parent=self.texture_2.transition_fade_out_timeline,marker_name='out_nearly_finished')
         def score_1_started(x):
@@ -204,7 +204,7 @@ class Canvas(log.Loggable):
         self.texture_1.fading_score.connect('started', score_1_started)
         self.texture_1.fading_score.connect('completed', score_1_completed)
 
-        self.texture_2.fading_score = clutter.Score()
+        self.texture_2.fading_score = Clutter.Score()
         self.texture_2.fading_score.append(timeline=self.texture_1.transition_fade_out_timeline)
         self.texture_2.fading_score.append_at_marker(timeline=self.texture_2.transition_fade_in_timeline,parent=self.texture_1.transition_fade_out_timeline,marker_name='out_nearly_finished')
         def score_2_started(x):
@@ -276,7 +276,7 @@ class Canvas(log.Loggable):
 
     def add_overlay(self,overlay):
         screen_width,screen_height = self.stage.get_size()
-        texture = clutter.Texture()
+        texture = Clutter.Texture()
         texture.set_keep_aspect_ratio(True)
         texture.set_size(int(overlay['width']),int(overlay['height']))
         print overlay['url']

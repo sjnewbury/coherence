@@ -10,9 +10,9 @@ import os
 import gettext
 
 import hildon
-import pygtk
-pygtk.require('2.0')
-import gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 from pkg_resources import resource_filename
 
@@ -31,51 +31,51 @@ class MediaRendererWindow(hildon.StackableWindow):
         self.device = device
         self.set_title(device.get_friendly_name())
 
-        vbox = gtk.VBox(homogeneous=False, spacing=10)
+        vbox = Gtk.VBox(homogeneous=False, spacing=10)
         vbox.set_border_width(5)
         
-        hbox = gtk.HBox(homogeneous=False)
-        self.album_art_image = gtk.Image()
+        hbox = Gtk.HBox(homogeneous=False)
+        self.album_art_image = Gtk.Image()
         icon = '/usr/share/icons/hicolor/295x295/hildon/mediaplayer_default_album.png'
-        self.blank_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.blank_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         self.album_art_image.set_from_pixbuf(self.blank_icon)
-        hbox.pack_start(self.album_art_image)#,False,False,2)
+        hbox.pack_start(self.album_art_image, True, True, 0)#,False,False,2)
 
-        #icon_loader = gtk.gdk.PixbufLoader()
+        #icon_loader = GdkPixbuf.PixbufLoader()
         #icon_loader.write(urllib.urlopen(str(res.data)).read())
         #icon_loader.close()
 
-        rightbox = gtk.VBox(homogeneous=False, spacing=10)
+        rightbox = Gtk.VBox(homogeneous=False, spacing=10)
 
-        textbox = gtk.VBox(homogeneous=False, spacing=10)
-        self.title_text = gtk.Label("<b>title</b>")
+        textbox = Gtk.VBox(homogeneous=False, spacing=10)
+        self.title_text = Gtk.Label(label="<b>title</b>")
         self.title_text.set_use_markup(True)
         textbox.pack_start(self.title_text,False,False,2)
-        self.album_text = gtk.Label("album")
+        self.album_text = Gtk.Label(label="album")
         self.album_text.set_use_markup(True)
         textbox.pack_start(self.album_text,False,False,2)
-        self.artist_text = gtk.Label("artist")
+        self.artist_text = Gtk.Label(label="artist")
         self.artist_text.set_use_markup(True)
         textbox.pack_start(self.artist_text,False,False,2)
         rightbox.pack_start(textbox,False,False,2)
 
-        seekbox = gtk.HBox(homogeneous=False, spacing=10)
-        self.position_min_text = gtk.Label("0:00")
+        seekbox = Gtk.HBox(homogeneous=False, spacing=10)
+        self.position_min_text = Gtk.Label(label="0:00")
         self.position_min_text.set_use_markup(True)
         seekbox.pack_start(self.position_min_text,False,False,2)
-        adjustment=gtk.Adjustment(value=0, lower=0, upper=240, step_incr=1,page_incr=20)
-        self.position_scale = gtk.HScale(adjustment=adjustment)
+        adjustment=Gtk.Adjustment(value=0, lower=0, upper=240, step_incr=1,page_incr=20)
+        self.position_scale = Gtk.HScale(adjustment=adjustment)
         self.position_scale.set_draw_value(False)
         self.position_scale.set_sensitive(False)
         self.position_scale.connect("format-value", self.format_position)
         self.position_scale.connect('change-value',self.position_changed)
         seekbox.pack_start(self.position_scale,True,True,2)
-        self.position_max_text = gtk.Label("0:00")
+        self.position_max_text = Gtk.Label(label="0:00")
         self.position_max_text.set_use_markup(True)
         seekbox.pack_end(self.position_max_text,False,False,2)
         rightbox.pack_start(seekbox,False,False,2)
 
-        hbox.pack_start(rightbox)
+        hbox.pack_start(rightbox, True, True, 0)
 
         vbox.pack_start(hbox,False,False,2)
 
@@ -92,7 +92,7 @@ class MediaRendererWindow(hildon.StackableWindow):
                                                     callback=self.seek_forward,sensitive=False)
         self.next_button = self.make_button('media-skip-forward.png',
                                             self.skip_forward,sensitive=False)
-        buttonbox2 = gtk.HBox(homogeneous=True, spacing=30)
+        buttonbox2 = Gtk.HBox(homogeneous=True, spacing=30)
         buttonbox2.pack_start(self.prev_button,False,False,2)
         buttonbox2.pack_start(self.seek_backward_button,False,False,2)
         buttonbox2.pack_start(self.stop_button,False,False,2)
@@ -100,51 +100,51 @@ class MediaRendererWindow(hildon.StackableWindow):
         buttonbox2.pack_start(self.seek_forward_button,False,False,2)
         buttonbox2.pack_start(self.next_button,False,False,2)
 
-        buttonbox = gtk.HBox(homogeneous=False, spacing=10)
-        self.buttons_alignment = gtk.Alignment(0.25, 0.25, 0.25, 0.25)
+        buttonbox = Gtk.HBox(homogeneous=False, spacing=10)
+        self.buttons_alignment = Gtk.Alignment.new(0.25, 0.25, 0.25, 0.25)
         self.buttons_alignment.add(buttonbox2)
         buttonbox.pack_start(self.buttons_alignment,False,False,2)
 
         
-        hbox = gtk.HBox(homogeneous=False, spacing=10)
+        hbox = Gtk.HBox(homogeneous=False, spacing=10)
         #hbox.set_size_request(240,-1)
-        adjustment=gtk.Adjustment(value=0, lower=0, upper=100, step_incr=1,page_incr=20)#, page_size=20)
-        self.volume_scale = gtk.HScale(adjustment=adjustment)
+        adjustment=Gtk.Adjustment(value=0, lower=0, upper=100, step_incr=1,page_incr=20)#, page_size=20)
+        self.volume_scale = Gtk.HScale(adjustment=adjustment)
         self.volume_scale.set_size_request(700,-1)
         self.volume_scale.set_draw_value(False)
         self.volume_scale.connect('change-value',self.volume_changed)
         #hbox.pack_start(self.volume_scale,False,False,2)
-        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.volume_image = gtk.Image()
+        button = hildon.GtkButton(Gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.volume_image = Gtk.Image()
         icon = resource_filename('mirabeau', os.path.join('data', 'icons','audio-volume-low.png'))
-        self.volume_low_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.volume_low_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         self.volume_image.set_from_pixbuf(self.volume_low_icon)
         button.set_image(self.volume_image)
         #button.connect("clicked", self.mute)
         button.connect("clicked", self.volume_toggle)
 
-        self.volume_alignment = gtk.Alignment(0.25, 0.25, 1, 0.25)
+        self.volume_alignment = Gtk.Alignment.new(0.25, 0.25, 1, 0.25)
         self.volume_alignment.add(self.volume_scale)
         
         icon = resource_filename('mirabeau', os.path.join('data', 'icons','audio-volume-medium.png'))
-        self.volume_medium_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.volume_medium_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename('mirabeau', os.path.join('data', 'icons','audio-volume-high.png'))
-        self.volume_high_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.volume_high_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename('mirabeau', os.path.join('data', 'icons','audio-volume-muted.png'))
-        self.volume_muted_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.volume_muted_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         hbox.pack_end(button,False,False,2)
 
         buttonbox.pack_end(hbox,False,False,2)
         vbox.pack_end(buttonbox, False,False,2)
         #vbox.pack_start(self.buttons_alignment,False,False,2)
 
-        self.pause_button_image = gtk.Image()
+        self.pause_button_image = Gtk.Image()
         icon = resource_filename('mirabeau', os.path.join('data', 'icons','media-playback-pause.png'))
-        icon = gtk.gdk.pixbuf_new_from_file(icon)
+        icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         self.pause_button_image.set_from_pixbuf(icon)
         self.start_button_image = self.start_button.get_image()
 
-        self.status_bar = gtk.Statusbar()
+        self.status_bar = Gtk.Statusbar()
         context_id = self.status_bar.get_context_id("Statusbar")
         #vbox.pack_end(self.status_bar,False,False,2)
 
@@ -191,9 +191,9 @@ class MediaRendererWindow(hildon.StackableWindow):
 
     def make_button(self,icon,callback=None,sensitive=True):
         icon = resource_filename('mirabeau', os.path.join('data', 'icons',icon))
-        icon = gtk.gdk.pixbuf_new_from_file(icon)
-        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        image = gtk.Image()
+        icon = GdkPixbuf.Pixbuf.new_from_file(icon)
+        button = hildon.GtkButton(Gtk.HILDON_SIZE_FINGER_HEIGHT)
+        image = Gtk.Image()
         image.set_from_pixbuf(icon)
         button.set_image(image)
         button.connect("clicked", lambda x: callback())
@@ -245,11 +245,11 @@ class MediaRendererWindow(hildon.StackableWindow):
 
                         def got_icon(icon):
                             icon = icon[0]
-                            icon_loader = gtk.gdk.PixbufLoader()
+                            icon_loader = GdkPixbuf.PixbufLoader()
                             icon_loader.write(icon)
                             icon_loader.close()
                             icon = icon_loader.get_pixbuf()
-                            icon = icon.scale_simple(300, 300, gtk.gdk.INTERP_BILINEAR)
+                            icon = icon.scale_simple(300, 300, GdkPixbuf.InterpType.BILINEAR)
                             self.album_art_image.set_from_pixbuf(icon)
 
                         if item.upnp_class.startswith('object.item.audioItem') and item.albumArtURI != None:

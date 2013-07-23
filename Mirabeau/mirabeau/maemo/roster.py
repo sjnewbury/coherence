@@ -7,10 +7,10 @@
 # Copyright 2010 - Philippe Normand <phil@base-art.net>
 
 import hildon
-import pygtk
-pygtk.require('2.0')
-import gtk
-import gobject
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+from gi.repository import GObject
 import gettext
 import dbus
 
@@ -29,18 +29,18 @@ class InviteFriendsWindow(hildon.StackableWindow):
         self.coherence = coherence
         self.set_title(_("Spread the word!"))
         self.contact_handles = []
-        vbox = gtk.VBox()
+        vbox = Gtk.VBox()
 
         # To
-        to_box = gtk.HBox()
-        to_button = hildon.GtkButton(gtk.HILDON_SIZE_AUTO_WIDTH |gtk.HILDON_SIZE_FINGER_HEIGHT)
+        to_box = Gtk.HBox()
+        to_button = hildon.GtkButton(Gtk.HILDON_SIZE_AUTO_WIDTH |Gtk.HILDON_SIZE_FINGER_HEIGHT)
         to_button.set_label(_("To:"))
         to_button.connect("clicked", self._select_contacts)
-        to_box.pack_start(to_button, expand=False)
-        self.to_entry = hildon.Entry(gtk.HILDON_SIZE_AUTO)
+        to_box.pack_start(to_button, False, True, 0)
+        self.to_entry = hildon.Entry(Gtk.HILDON_SIZE_AUTO)
         self.to_entry.set_sensitive(False)
-        to_box.pack_start(self.to_entry)
-        vbox.pack_start(to_box, expand=False)
+        to_box.pack_start(self.to_entry, True, True, 0)
+        vbox.pack_start(to_box, False, True, 0)
 
         # Message
         template = _("""\
@@ -49,17 +49,17 @@ Hi! Join me in the tubes of the interwebs! It is all explained there:
         """)
         howto_url = "http://coherence.beebits.net/wiki/MirabeauHowTo"
         self.text_view = hildon.TextView()
-        buf = gtk.TextBuffer()
+        buf = Gtk.TextBuffer()
         buf.set_text(template % locals())
-        self.text_view.set_wrap_mode(gtk.WRAP_WORD)
+        self.text_view.set_wrap_mode(Gtk.WrapMode.WORD)
         self.text_view.set_buffer(buf)
-        vbox.pack_start(self.text_view)
+        vbox.pack_start(self.text_view, True, True, 0)
 
         # Send
-        send_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        send_button = hildon.GtkButton(Gtk.HILDON_SIZE_FINGER_HEIGHT)
         send_button.set_label(_("Send"))
         send_button.connect("clicked", self._send_message)
-        vbox.pack_start(send_button, expand=False)
+        vbox.pack_start(send_button, False, True, 0)
 
         self.add(vbox)
         vbox.show_all()

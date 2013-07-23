@@ -3,7 +3,7 @@
 
 # Copyright 2009 Philippe Normand <phil@base-art.net>
 
-import gobject
+from gi.repository import GObject
 from dbus import PROPERTIES_IFACE
 
 from telepathy.interfaces import CHANNEL_INTERFACE, CONNECTION_INTERFACE_REQUESTS, \

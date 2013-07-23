@@ -53,7 +53,7 @@ class TestINotify(unittest.TestCase):
             callbacks=(_callback, EXTRA_ARG)
         )
         d = defer.Deferred()
-        f = self.dirname.child(NEW_FILENAME).open('wb')
+        f = self.dirname.get_child()(NEW_FILENAME).open('wb')
         f.write("hello darling")
         f.close()
         return d
@@ -79,7 +79,7 @@ class TestINotify(unittest.TestCase):
             self.dirname, mask=checkMask, auto_add=True,
             callbacks=(_callback, None)
         )
-        SUBDIR = self.dirname.child('test')
+        SUBDIR = self.dirname.get_child()('test')
         d = defer.Deferred()
         SUBDIR.createDirectory()
         return d
@@ -122,7 +122,7 @@ class TestINotify(unittest.TestCase):
             self.dirname, mask=checkMask, auto_add=True,
             callbacks=(_callback, None)
         )
-        SUBDIR = self.dirname.child('test')
+        SUBDIR = self.dirname.get_child()('test')
         d = defer.Deferred()
         SUBDIR.createDirectory()
         return d
@@ -166,9 +166,9 @@ class TestINotify(unittest.TestCase):
         Test that a recursive watch correctly adds all the paths in
         the watched directory.
         """
-        SUBDIR = self.dirname.child('test')
-        SUBDIR2 = SUBDIR.child('test2')
-        SUBDIR3 = SUBDIR2.child('test3')
+        SUBDIR = self.dirname.get_child()('test')
+        SUBDIR2 = SUBDIR.get_child()('test2')
+        SUBDIR3 = SUBDIR2.get_child()('test3')
         SUBDIR3.makedirs()
         DIRS = [SUBDIR, SUBDIR2, SUBDIR3]
         self.inotify.watch(self.dirname, recursive=True)
@@ -197,7 +197,7 @@ class TestINotify(unittest.TestCase):
             self.dirname, mask=checkMask, auto_add=False,
             callbacks=(_callback, None)
         )
-        SUBDIR = self.dirname.child('test')
+        SUBDIR = self.dirname.get_child()('test')
         d = defer.Deferred()
         SUBDIR.createDirectory()
         return d
@@ -243,9 +243,9 @@ class TestINotify(unittest.TestCase):
             self.dirname, mask=checkMask, auto_add=True,
             callbacks=(_callback, None)
         )
-        SUBDIR = self.dirname.child('test')
-        SUBDIR2 = SUBDIR.child('test2')
-        SUBDIR3 = SUBDIR2.child('test3')
+        SUBDIR = self.dirname.get_child()('test')
+        SUBDIR2 = SUBDIR.get_child()('test2')
+        SUBDIR3 = SUBDIR2.get_child()('test3')
         SOME_FILES = set(["file1.dat", "file2.dat", "file3.dat"])
         d = defer.Deferred()
         SUBDIR3.makedirs()
@@ -260,5 +260,5 @@ class TestINotify(unittest.TestCase):
             else:
                 S = SUBDIR3
 
-            S.child(filename).setContent(filename)
+            S.get_child()(filename).setContent(filename)
         return d

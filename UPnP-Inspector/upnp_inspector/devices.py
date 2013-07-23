@@ -8,9 +8,9 @@
 import os.path
 import time
 
-import pygtk
-pygtk.require("2.0")
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 from twisted.internet import reactor
 
@@ -49,51 +49,51 @@ class DevicesWidget(log.Loggable):
         self.init_controlpoint()
 
     def build_ui(self):
-        self.window = gtk.ScrolledWindow()
-        self.window.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.window = Gtk.ScrolledWindow()
+        self.window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
         self.icons = {}
 
         icon = resource_filename(__name__, os.path.join('icons','upnp-device.png'))
-        self.icons['device'] = gtk.gdk.pixbuf_new_from_file(icon)
+        self.icons['device'] = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','network-server.png'))
-        self.icons['mediaserver'] = gtk.gdk.pixbuf_new_from_file(icon)
+        self.icons['mediaserver'] = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','media-renderer.png'))
-        self.icons['mediarenderer'] = gtk.gdk.pixbuf_new_from_file(icon)
+        self.icons['mediarenderer'] = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','network-light.png'))
-        self.icons['binarylight'] = gtk.gdk.pixbuf_new_from_file(icon)
-        self.icons['dimmablelight'] = gtk.gdk.pixbuf_new_from_file(icon)
+        self.icons['binarylight'] = GdkPixbuf.Pixbuf.new_from_file(icon)
+        self.icons['dimmablelight'] = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','camera-web.png'))
-        self.icons['digitalsecuritycamera'] = gtk.gdk.pixbuf_new_from_file(icon)
+        self.icons['digitalsecuritycamera'] = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','printer.png'))
-        self.icons['printer'] = gtk.gdk.pixbuf_new_from_file(icon)
+        self.icons['printer'] = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','folder.png'))
-        self.folder_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.folder_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','upnp-service.png'))
-        self.service_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.service_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','upnp-action.png'))
-        self.action_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.action_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','upnp-action-arg-in.png'))
-        self.action_arg_in_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.action_arg_in_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','upnp-action-arg-out.png'))
-        self.action_arg_out_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.action_arg_out_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','upnp-state-variable.png'))
-        self.state_variable_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.state_variable_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
 
-        self.store = gtk.TreeStore(int,  # 0: type
+        self.store = Gtk.TreeStore(int,  # 0: type
                                    str,  # 1: name
                                    str,  # 2: device udn
-                                   gtk.gdk.Pixbuf,
+                                   GdkPixbuf.Pixbuf,
                                    object
                                 )
 
-        self.treeview = gtk.TreeView(self.store)
-        self.column = gtk.TreeViewColumn('Devices')
+        self.treeview = Gtk.TreeView(self.store)
+        self.column = Gtk.TreeViewColumn('Devices')
         self.treeview.append_column(self.column)
 
         # create a CellRenderers to render the data
-        icon_cell = gtk.CellRendererPixbuf()
-        text_cell = gtk.CellRendererText()
+        icon_cell = Gtk.CellRendererPixbuf()
+        text_cell = Gtk.CellRendererText()
 
         self.column.pack_start(icon_cell, False)
         self.column.pack_start(text_cell, True)
@@ -107,7 +107,7 @@ class DevicesWidget(log.Loggable):
         self.treeview.connect("move_cursor", self.moved_cursor)
 
         selection = self.treeview.get_selection()
-        selection.set_mode(gtk.SELECTION_SINGLE)
+        selection.set_mode(Gtk.SelectionMode.SINGLE)
 
         self.window.add(self.treeview)
 
@@ -122,56 +122,56 @@ class DevicesWidget(log.Loggable):
                 try:
                     self.windows[id].show()
                 except:
-                    window = gtk.Window()
+                    window = Gtk.Window()
                     window.set_default_size(350, 300)
                     window.set_title('Invoke Action %s' % object.name)
                     window.connect("delete_event", self.deactivate, id)
 
                     def build_label(icon,label):
-                        hbox = gtk.HBox(homogeneous=False, spacing=10)
-                        image = gtk.Image()
+                        hbox = Gtk.HBox(homogeneous=False, spacing=10)
+                        image = Gtk.Image()
                         image.set_from_pixbuf(icon)
                         hbox.pack_start(image,False,False,2)
-                        text = gtk.Label(label)
+                        text = Gtk.Label(label=label)
                         hbox.pack_start(text,False,False,2)
                         return hbox
 
                     def build_button(label):
-                        hbox = gtk.HBox(homogeneous=False, spacing=10)
-                        image = gtk.Image()
+                        hbox = Gtk.HBox(homogeneous=False, spacing=10)
+                        image = Gtk.Image()
                         image.set_from_pixbuf(self.action_icon)
                         hbox.pack_start(image,False,False,2)
-                        text = gtk.Label(label)
+                        text = Gtk.Label(label=label)
                         hbox.pack_start(text,False,False,2)
-                        button = gtk.Button()
-                        button.set_flags(gtk.CAN_DEFAULT)
+                        button = Gtk.Button()
+                        button.set_can_default(True)
                         button.add(hbox)
 
                         return button
 
                     def build_arguments(action,direction):
-                        text = gtk.Label("<b>'%s' arguments:</b>'" % direction)
+                        text = Gtk.Label(label="<b>'%s' arguments:</b>'" % direction)
                         text.set_use_markup(True)
-                        hbox = gtk.HBox(homogeneous=False, spacing=10)
+                        hbox = Gtk.HBox(homogeneous=False, spacing=10)
                         hbox.pack_start(text,False,False,2)
-                        vbox = gtk.VBox(homogeneous=False, spacing=10)
+                        vbox = Gtk.VBox(homogeneous=False, spacing=10)
                         vbox.pack_start(hbox,False,False,2)
                         row = 0
                         if direction == 'in':
                             arguments = object.get_in_arguments()
                         else:
                             arguments = object.get_out_arguments()
-                        table = gtk.Table(rows=len(arguments), columns=2, homogeneous=False)
+                        table = Gtk.Table(rows=len(arguments), columns=2, homogeneous=False)
                         entries = {}
                         for argument in arguments:
                             variable = action.service.get_state_variable(argument.state_variable)
-                            name = gtk.Label(argument.name+':')
+                            name = Gtk.Label(label=argument.name+':')
                             name.set_alignment(0,0)
-                            #hbox = gtk.HBox(homogeneous=False, spacing=2)
+                            #hbox = Gtk.HBox(homogeneous=False, spacing=2)
                             #hbox.pack_start(name,False,False,2)
-                            table.attach(name, 0, 1, row, row+1,gtk.SHRINK)
+                            table.attach(name, 0, 1, row, row+1,Gtk.AttachOptions.SHRINK)
                             if variable.data_type == 'boolean':
-                                entry = gtk.CheckButton()
+                                entry = Gtk.CheckButton()
                                 if direction == 'in':
                                     entries[argument.name] = entry.get_active
                                 else:
@@ -179,11 +179,11 @@ class DevicesWidget(log.Loggable):
                                     entries[argument.name] = (variable.data_type,entry.set_active)
                             elif variable.data_type == 'string':
                                 if direction == 'in' and len(variable.allowed_values) > 0:
-                                    store = gtk.ListStore(str)
+                                    store = Gtk.ListStore(str)
                                     for value in variable.allowed_values:
                                         store.append((value,))
-                                    entry = gtk.ComboBox()
-                                    text_cell = gtk.CellRendererText()
+                                    entry = Gtk.ComboBox()
+                                    text_cell = Gtk.CellRendererText()
                                     entry.pack_start(text_cell, True)
                                     entry.set_attributes(text_cell, text=0)
                                     entry.set_model(store)
@@ -191,47 +191,47 @@ class DevicesWidget(log.Loggable):
                                     entries[argument.name] = (entry.get_active,entry.get_model)
                                 else:
                                     if direction == 'in':
-                                        entry = gtk.Entry(max=0)
+                                        entry = Gtk.Entry(max=0)
                                         entries[argument.name] = entry.get_text
                                     else:
-                                        entry = gtk.ScrolledWindow()
+                                        entry = Gtk.ScrolledWindow()
                                         entry.set_border_width(1)
-                                        entry.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-                                        entry.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-                                        textview = gtk.TextView()
+                                        entry.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+                                        entry.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+                                        textview = Gtk.TextView()
                                         textview.set_editable(False)
-                                        textview.set_wrap_mode(gtk.WRAP_WORD)
+                                        textview.set_wrap_mode(Gtk.WrapMode.WORD)
                                         entry.add(textview)
                                         entries[argument.name] = ('text',textview)
                             else:
                                 if direction == 'out':
-                                    entry = gtk.Entry(max=0)
+                                    entry = Gtk.Entry(max=0)
                                     entry.set_editable(False)
                                     entries[argument.name] = (variable.data_type,entry.set_text)
                                 else:
-                                    adj = gtk.Adjustment(0, 0, 4294967296, 1.0, 50.0, 0.0)
-                                    entry = gtk.SpinButton(adj, 0, 0)
+                                    adj = Gtk.Adjustment(0, 0, 4294967296, 1.0, 50.0, 0.0)
+                                    entry = Gtk.SpinButton(adj, 0, 0)
                                     entry.set_numeric(True)
                                     entry.set_digits(0)
                                     entries[argument.name] = entry.get_value_as_int
 
-                            table.attach(entry,1,2,row,row+1,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.EXPAND)
+                            table.attach(entry,1,2,row,row+1,Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND,Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND)
                             row += 1
-                        #hbox = gtk.HBox(homogeneous=False, spacing=10)
+                        #hbox = Gtk.HBox(homogeneous=False, spacing=10)
                         #hbox.pack_start(table,False,False,2)
                         #hbox.show()
                         vbox.pack_start(table,False,False,2)
                         return vbox,entries
 
-                    vbox = gtk.VBox(homogeneous=False, spacing=10)
+                    vbox = Gtk.VBox(homogeneous=False, spacing=10)
                     vbox.pack_start(build_label(self.store[row_path[0]][ICON_COLUMN],self.store[row_path[0]][NAME_COLUMN]),False,False,2)
                     vbox.pack_start(build_label(self.service_icon,self.store[row_path[0],row_path[1]][NAME_COLUMN]),False,False,2)
                     vbox.pack_start(build_label(self.action_icon,object.name),False,False,2)
-                    hbox = gtk.HBox(homogeneous=False, spacing=10)
+                    hbox = Gtk.HBox(homogeneous=False, spacing=10)
                     hbox.pack_start(vbox,False,False,2)
                     button = build_button('Invoke')
                     hbox.pack_end(button,False,False,20)
-                    vbox = gtk.VBox(homogeneous=False, spacing=10)
+                    vbox = Gtk.VBox(homogeneous=False, spacing=10)
                     vbox.pack_start(hbox,False,False,2)
                     in_entries = {}
                     out_entries = {}
@@ -243,7 +243,7 @@ class DevicesWidget(log.Loggable):
                         vbox.pack_start(box,False,False,2)
                     window.add(vbox)
 
-                    status_bar = gtk.Statusbar()
+                    status_bar = Gtk.Statusbar()
                     context_id = status_bar.get_context_id("Action Statusbar")
                     vbox.pack_end(status_bar,False,False,2)
 
@@ -275,48 +275,48 @@ class DevicesWidget(log.Loggable):
                 iter = self.store.get_iter(row_path)
                 type,object= self.store.get(iter,TYPE_COLUMN,OBJECT_COLUMN)
                 if type == DEVICE:
-                    menu = gtk.Menu()
-                    item = gtk.CheckMenuItem("show events")
+                    menu = Gtk.Menu()
+                    item = Gtk.CheckMenuItem("show events")
                     item.set_sensitive(False)
                     menu.append(item)
-                    item = gtk.CheckMenuItem("show log")
+                    item = Gtk.CheckMenuItem("show log")
                     item.set_sensitive(False)
                     menu.append(item)
-                    menu.append(gtk.SeparatorMenuItem())
-                    item = gtk.MenuItem("extract device and service descriptions...")
+                    menu.append(Gtk.SeparatorMenuItem())
+                    item = Gtk.MenuItem("extract device and service descriptions...")
                     item.connect("activate", self.extract_descriptions, object)
                     menu.append(item)
-                    menu.append(gtk.SeparatorMenuItem())
-                    item = gtk.MenuItem("test device...")
+                    menu.append(Gtk.SeparatorMenuItem())
+                    item = Gtk.MenuItem("test device...")
                     item.set_sensitive(False)
                     menu.append(item)
                     if(object != None and
                        object.get_device_type().split(':')[3].lower() == 'mediaserver'):
-                        menu.append(gtk.SeparatorMenuItem())
-                        item = gtk.MenuItem("browse MediaServer")
+                        menu.append(Gtk.SeparatorMenuItem())
+                        item = Gtk.MenuItem("browse MediaServer")
                         item.connect("activate", self.mediaserver_browse, object)
                         menu.append(item)
                     if(object != None and
                        object.get_device_type().split(':')[3].lower() == 'mediarenderer'):
-                        menu.append(gtk.SeparatorMenuItem())
-                        item = gtk.MenuItem("control MediaRendererer")
+                        menu.append(Gtk.SeparatorMenuItem())
+                        item = Gtk.MenuItem("control MediaRendererer")
                         item.connect("activate", self.mediarenderer_control, object)
                         menu.append(item)
                     if(object != None and
                        object.get_device_type().split(':')[3].lower() == 'internetgatewaydevice'):
-                        menu.append(gtk.SeparatorMenuItem())
-                        item = gtk.MenuItem("control InternetGatewayDevice")
+                        menu.append(Gtk.SeparatorMenuItem())
+                        item = Gtk.MenuItem("control InternetGatewayDevice")
                         item.connect("activate", self.igd_control, object)
                         menu.append(item)
                     menu.show_all()
                     menu.popup(None,None,None,event.button,event.time)
                     return True
                 elif type == SERVICE:
-                    menu = gtk.Menu()
-                    item = gtk.CheckMenuItem("show events")
+                    menu = Gtk.Menu()
+                    item = Gtk.CheckMenuItem("show events")
                     item.set_sensitive(False)
                     menu.append(item)
-                    item = gtk.CheckMenuItem("show log")
+                    item = Gtk.CheckMenuItem("show log")
                     item.set_sensitive(False)
                     menu.append(item)
                     menu.show_all()

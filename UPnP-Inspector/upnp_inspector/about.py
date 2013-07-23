@@ -8,16 +8,16 @@
 import os.path
 from pkg_resources import resource_filename
 
-import pygtk
-pygtk.require("2.0")
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 from upnp_inspector import __version__
 
 class AboutWidget():
 
     def __init__(self):
-        self.window = gtk.AboutDialog()
+        self.window = Gtk.AboutDialog()
         self.window.set_name('UPnP Inspector')
         self.window.set_version(__version__)
         self.window.set_copyright('(c) Frank Scholz <coherence@beebits.net>')
@@ -32,7 +32,7 @@ David Göthberg: Public Domain""")
         self.window.set_artists(['Tango Desktop Project http://tango.freedesktop.org','David Göthberg: http://commons.wikimedia.org/wiki/User:Davidgothberg','Karl Vollmer: http://ampache.org'])
 
         logo = resource_filename(__name__, os.path.join('icons','inspector-logo.png'))
-        logo = gtk.gdk.pixbuf_new_from_file(logo)
+        logo = GdkPixbuf.Pixbuf.new_from_file(logo)
         self.window.set_logo(logo)
 
         self.window.show_all()

@@ -23,17 +23,17 @@
 import sys
 import os
 
-import pygtk
-pygtk.require("2.0")
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 from coherence.ui.av_widgets import DeviceImportWidget
 
 def show_upload_widget(files,standalone=True):
 
-    window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+    window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
     if standalone:
-        window.connect("delete_event", gtk.main_quit)
+        window.connect("delete_event", Gtk.main_quit)
     window.set_default_size(350, 300)
     window.set_title('Coherence DLNA/UPnP Upload')
 
@@ -121,5 +121,5 @@ if __name__ == '__main__':
     files = [x for x in sys.argv[1:] if not os.path.isdir(x)]
     show_upload_widget(files)
 
-    gtk.gdk.threads_init()
-    gtk.main()
+    Gdk.threads_init()
+    Gtk.main()

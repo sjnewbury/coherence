@@ -139,7 +139,7 @@ class TestClient(unittest.TestCase):
     def setUp(self):
         name = self.mktemp()
         os.mkdir(name)
-        FilePath(name).child("file").setContent("0123456789")
+        FilePath(name).get_child()("file").setContent("0123456789")
         r = static.File(name)
         self.site = server.Site(r, timeout=None)
         self.wrapper = policies.WrappingFactory(self.site)

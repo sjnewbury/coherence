@@ -30,18 +30,18 @@ class TestContentDirectoryServer(unittest.TestCase):
 
     def setUp(self):
         self.tmp_content = FilePath('tmp_content_coherence-%d'%os.getpid())
-        f = self.tmp_content.child('content')
-        audio = f.child('audio')
-        f.child('images').makedirs()
-        f.child('video').makedirs()
-        album = audio.child('album-1')
+        f = self.tmp_content.get_child()('content')
+        audio = f.get_child()('audio')
+        f.get_child()('images').makedirs()
+        f.get_child()('video').makedirs()
+        album = audio.get_child()('album-1')
         album.makedirs()
-        album.child('track-1.mp3').touch()
-        album.child('track-2.mp3').touch()
-        album = audio.child('album-2')
+        album.get_child()('track-1.mp3').touch()
+        album.get_child()('track-2.mp3').touch()
+        album = audio.get_child()('album-2')
         album.makedirs()
-        album.child('track-1.ogg').touch()
-        album.child('track-2.ogg').touch()
+        album.get_child()('track-1.ogg').touch()
+        album.get_child()('track-2.ogg').touch()
         louie.reset()
         self.coherence = Coherence({'unittest':'yes','logmode':'debug','subsystem_log':{'controlpoint':'error',
                                                                                         'action':'error',

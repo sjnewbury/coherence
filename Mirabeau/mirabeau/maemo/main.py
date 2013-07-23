@@ -7,16 +7,16 @@
 # Copyright 2010 - Philippe Normand <phil@base-art.net>
 
 import hildon
-import pygtk
-pygtk.require('2.0')
-import gtk
-import gobject
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+from gi.repository import GObject
 import gettext
 import dbus
 
 _ = gettext.gettext
 
-gtk.gdk.threads_init()
+Gdk.threads_init()
 
 from twisted.internet import reactor
 
@@ -103,23 +103,23 @@ A valid GTalk/Jabber account is needed.""")
     def _create_menu(self):
         menu = hildon.AppMenu()
 
-        self.settings_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.settings_button = hildon.GtkButton(Gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.settings_button.set_label(_("Settings"))
         self.settings_button.connect('clicked', self.open_settings)
         self.settings_button.show()
         menu.append(self.settings_button)
 
-        self.status_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.status_button = hildon.GtkButton(Gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.status_button.set_label("status")
         self.status_button.connect('clicked', self.update_status)
         self.status_button.show()
         menu.append(self.status_button)
 
-        self.chatroom_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.chatroom_button = hildon.GtkButton(Gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.chatroom_button.set_label(_("Chatroom"))
         #menu.append(self.chatroom)
 
-        self.spread_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.spread_button = hildon.GtkButton(Gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.spread_button.set_label(_("Invite friends"))
         self.spread_button.connect('clicked', self.invite_friends)
         menu.append(self.spread_button)
@@ -148,7 +148,7 @@ A valid GTalk/Jabber account is needed.""")
         dialog = dialogs.SettingsDialog(self, mirabeau_section,
                                         media_server_enabled)
         response = dialog.run()
-        if response == gtk.RESPONSE_ACCEPT:
+        if response == Gtk.ResponseType.ACCEPT:
             self.controller.update_settings(dialog.get_chatroom(),
                                             dialog.get_conf_server(),
                                             dialog.get_account(),
@@ -167,16 +167,16 @@ A valid GTalk/Jabber account is needed.""")
                                             mirabeau_section["conference-server"])
         window.show_all()
 
-class DevicesView(gtk.TreeView):
+class DevicesView(Gtk.TreeView):
 
     DEVICE_NAME_COLUMN = 0
     DEVICE_OBJECT_COLUMN = 1
 
     def __init__(self):
         super(DevicesView, self).__init__()
-        model = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
-        device_renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn('Name', device_renderer, text = self.DEVICE_NAME_COLUMN)
+        model = Gtk.ListStore(str, GObject.TYPE_PYOBJECT)
+        device_renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('Name', device_renderer, text = self.DEVICE_NAME_COLUMN)
         self.set_model(model)
         self.append_column(column)
         self.sort_ascending()
@@ -213,7 +213,7 @@ class DevicesView(gtk.TreeView):
                 tree_iter = model.iter_next(tree_iter)
 
     def sort_descending(self):
-        self.get_model().set_sort_column_id(self.DEVICE_NAME_COLUMN, gtk.SORT_DESCENDING)
+        self.get_model().set_sort_column_id(self.DEVICE_NAME_COLUMN, Gtk.SortType.DESCENDING)
 
     def sort_ascending(self):
-        self.get_model().set_sort_column_id(self.DEVICE_NAME_COLUMN, gtk.SORT_ASCENDING)
+        self.get_model().set_sort_column_id(self.DEVICE_NAME_COLUMN, Gtk.SortType.ASCENDING)

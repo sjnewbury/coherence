@@ -7,9 +7,9 @@
 
 import os
 
-import pygtk
-pygtk.require("2.0")
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 if __name__ == '__main__':
     from twisted.internet import gtk2reactor
@@ -28,7 +28,7 @@ class IGDWidget(log.Loggable):
     def __init__(self,coherence,device):
         self.coherence = coherence
         self.device = device
-        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         self.window.connect("delete_event", self.hide)
         self.window.set_default_size(480,200)
         try:
@@ -37,72 +37,72 @@ class IGDWidget(log.Loggable):
             title = 'InternetGatewayDevice'
         self.window.set_title(title)
 
-        vbox = gtk.VBox(homogeneous=False, spacing=10)
-        hbox = gtk.HBox(homogeneous=False, spacing=10)
+        vbox = Gtk.VBox(homogeneous=False, spacing=10)
+        hbox = Gtk.HBox(homogeneous=False, spacing=10)
 
-        text = gtk.Label("<b>Link:</b>")
+        text = Gtk.Label(label="<b>Link:</b>")
         text.set_use_markup(True)
 
-        self.link_state_image = gtk.Image()
+        self.link_state_image = Gtk.Image()
         icon = resource_filename(__name__, os.path.join('icons','red.png'))
-        self.link_down_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.link_down_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','green.png'))
-        self.link_up_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.link_up_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         self.link_state_image.set_from_pixbuf(self.link_down_icon)
 
         hbox.add(text)
         hbox.add(self.link_state_image)
 
-        self.link_type = gtk.Label("<b>Type:</b> unknown (n/a)")
+        self.link_type = Gtk.Label(label="<b>Type:</b> unknown (n/a)")
         self.link_type.set_use_markup(True)
         hbox.add(self.link_type)
 
         vbox.pack_start(hbox,False,False,2)
-        hbox = gtk.HBox(homogeneous=False, spacing=10)
-        label = gtk.Label("<b>Uptime:</b>")
+        hbox = Gtk.HBox(homogeneous=False, spacing=10)
+        label = Gtk.Label(label="<b>Uptime:</b>")
         label.set_use_markup(True)
         hbox.add(label)
-        self.uptime = gtk.Label("   ")
+        self.uptime = Gtk.Label(label="   ")
         self.uptime.set_use_markup(True)
         hbox.add(self.uptime)
 
-        label = gtk.Label("<b>External IP:</b>")
+        label = Gtk.Label(label="<b>External IP:</b>")
         label.set_use_markup(True)
         hbox.add(label)
-        self.external_ip = gtk.Label("   ")
+        self.external_ip = Gtk.Label(label="   ")
         self.external_ip.set_use_markup(True)
         hbox.add(self.external_ip)
 
-        label = gtk.Label("<b>IN-Bytes:</b>")
+        label = Gtk.Label(label="<b>IN-Bytes:</b>")
         label.set_use_markup(True)
         hbox.add(label)
-        self.bytes_in = gtk.Label("   ")
+        self.bytes_in = Gtk.Label(label="   ")
         self.bytes_in.set_use_markup(True)
         hbox.add(self.bytes_in)
 
-        label = gtk.Label("<b>OUT-Bytes:</b>")
+        label = Gtk.Label(label="<b>OUT-Bytes:</b>")
         label.set_use_markup(True)
         hbox.add(label)
-        self.bytes_out = gtk.Label("   ")
+        self.bytes_out = Gtk.Label(label="   ")
         self.bytes_out.set_use_markup(True)
         hbox.add(self.bytes_out)
 
         vbox.pack_start(hbox,False,False,2)
 
-        hbox = gtk.HBox(homogeneous=False, spacing=10)
-        label = gtk.Label("<b>Port-Mappings:</b>")
+        hbox = Gtk.HBox(homogeneous=False, spacing=10)
+        label = Gtk.Label(label="<b>Port-Mappings:</b>")
         label.set_use_markup(True)
         hbox.add(label)
         vbox.pack_start(hbox,False,False,2)
 
-        self.nat_store = gtk.ListStore(str,str,str,str,str,str,str,str,str)
-        self.nat_view = gtk.TreeView(self.nat_store)
+        self.nat_store = Gtk.ListStore(str,str,str,str,str,str,str,str,str)
+        self.nat_view = Gtk.TreeView(self.nat_store)
         self.nat_view.connect("button_press_event", self.button_action)
         i = 0
         for c in ['index','enabled','protocol','remote host','external port','internal host','internal port','lease duration','description']:
-            column = gtk.TreeViewColumn(c)
+            column = Gtk.TreeViewColumn(c)
             self.nat_view.append_column(column)
-            text_cell = gtk.CellRendererText()
+            text_cell = Gtk.CellRendererText()
             column.pack_start(text_cell, True)
             column.add_attribute(text_cell, "text", i)
             i += 1
@@ -142,8 +142,8 @@ class IGDWidget(log.Loggable):
         y = int(event.y)
         path = self.nat_view.get_path_at_pos(x, y)
         if event.button == 3:
-            menu = gtk.Menu()
-            item = gtk.MenuItem("add new port-mapping...")
+            menu = Gtk.Menu()
+            item = Gtk.MenuItem("add new port-mapping...")
             item.set_sensitive(False)
             menu.append(item)
             if path != None:
@@ -152,10 +152,10 @@ class IGDWidget(log.Loggable):
                 selection = self.nat_view.get_selection()
                 if not selection.path_is_selected(row_path):
                     self.nat_view.set_cursor(row_path,column,False)
-                item = gtk.MenuItem("modify port-mapping...")
+                item = Gtk.MenuItem("modify port-mapping...")
                 item.set_sensitive(False)
                 menu.append(item)
-                item = gtk.MenuItem("delete port-mapping...")
+                item = Gtk.MenuItem("delete port-mapping...")
                 item.set_sensitive(True)
                 protocol,remote_host,external_port = self.nat_store.get(iter,2,3,4)
                 item.connect("activate", self.delete_mapping,protocol,remote_host,external_port)

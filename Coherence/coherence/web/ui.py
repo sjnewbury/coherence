@@ -199,16 +199,16 @@ class WebUI(athena.LivePage, log.Loggable):
         self.coherence = self.rootObject.coherence
 
         self.jsModules.mapping.update({
-            'MochiKit': filepath.FilePath(__file__).parent().child('static').child('MochiKit.js').path})
+            'MochiKit': filepath.FilePath(__file__).parent().get_child()('static').get_child()('MochiKit.js').path})
 
         self.jsModules.mapping.update({
-            'Coherence': filepath.FilePath(__file__).parent().child('static').child('Coherence.js').path})
+            'Coherence': filepath.FilePath(__file__).parent().get_child()('static').get_child()('Coherence.js').path})
         self.jsModules.mapping.update({
-            'Coherence.Base': filepath.FilePath(__file__).parent().child('static').child('Coherence.Base.js').path})
+            'Coherence.Base': filepath.FilePath(__file__).parent().get_child()('static').get_child()('Coherence.Base.js').path})
         self.jsModules.mapping.update({
-            'Coherence.Devices': filepath.FilePath(__file__).parent().child('static').child('Coherence.Devices.js').path})
+            'Coherence.Devices': filepath.FilePath(__file__).parent().get_child()('static').get_child()('Coherence.Devices.js').path})
         self.jsModules.mapping.update({
-            'Coherence.Logging': filepath.FilePath(__file__).parent().child('static').child('Coherence.Logging.js').path})
+            'Coherence.Logging': filepath.FilePath(__file__).parent().get_child()('static').get_child()('Coherence.Logging.js').path})
         self.menu = MenuFragment(self)
 
     def childFactory(self, ctx, name):

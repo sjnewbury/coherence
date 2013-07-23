@@ -8,9 +8,9 @@
 import gettext
 
 import hildon
-import pygtk
-pygtk.require('2.0')
-import gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 import dbus
 
 _ = gettext.gettext
@@ -20,15 +20,15 @@ from coherence.extern.telepathy import connect
 from telepathy.interfaces import ACCOUNT_MANAGER, ACCOUNT, \
      CONNECTION_INTERFACE_ALIASING, CONNECTION_INTERFACE_SIMPLE_PRESENCE
 
-class SelectMRDialog(gtk.Dialog):
+class SelectMRDialog(Gtk.Dialog):
 
     def __init__(self, parent, coherence):
         super(SelectMRDialog, self).__init__(parent=parent,
-                                             buttons = (gtk.STOCK_APPLY,
-                                                        gtk.RESPONSE_ACCEPT))
+                                             buttons = (Gtk.STOCK_APPLY,
+                                                        Gtk.ResponseType.ACCEPT))
         self.set_title(_("Select a MediaRenderer"))
         self.mrs = []
-        self.mediarenderer_picker = hildon.PickerButton(gtk.HILDON_SIZE_FINGER_HEIGHT,
+        self.mediarenderer_picker = hildon.PickerButton(Gtk.HILDON_SIZE_FINGER_HEIGHT,
                                                         hildon.BUTTON_ARRANGEMENT_VERTICAL)
         selector = hildon.TouchSelectorEntry(text = True)
         self.mediarenderer_picker.set_title(_('Mediarenderer:'))
@@ -51,12 +51,12 @@ class SelectMRDialog(gtk.Dialog):
 
 
 
-class SettingsDialog(gtk.Dialog):
+class SettingsDialog(Gtk.Dialog):
 
     def __init__(self, parent, mirabeau_section, media_server_enabled):
         super(SettingsDialog, self).__init__(parent=parent,
-                                             buttons = (gtk.STOCK_SAVE,
-                                                        gtk.RESPONSE_ACCEPT))
+                                             buttons = (Gtk.STOCK_SAVE,
+                                                        Gtk.ResponseType.ACCEPT))
         self.set_title(_("Settings"))
 
         self.accounts = []
@@ -66,7 +66,7 @@ class SettingsDialog(gtk.Dialog):
         conf_account = mirabeau_section.get("account")
         index = -1
         accounts = connect.gabble_accounts()
-        self.account_picker = hildon.PickerButton(gtk.HILDON_SIZE_FINGER_HEIGHT,
+        self.account_picker = hildon.PickerButton(Gtk.HILDON_SIZE_FINGER_HEIGHT,
                                                   hildon.BUTTON_ARRANGEMENT_VERTICAL)
         selector = hildon.TouchSelectorEntry(text = True)
         self.account_picker.set_title(_('Account:'))
@@ -88,31 +88,31 @@ class SettingsDialog(gtk.Dialog):
         if index > -1:
             self.account_picker.set_active(index)
 
-        self.vbox.pack_start(self.account_picker, expand=False)
+        self.vbox.pack_start(self.account_picker, False, True, 0)
 
         # conf server
-        self.conf_server_label = gtk.Label(_("Conference Server"))
-        self.conf_server_entry = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.conf_server_label = Gtk.Label(label=_("Conference Server"))
+        self.conf_server_entry = hildon.Entry(Gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.conf_server_entry.set_text(mirabeau_section.get("conference-server", ""))
-        self.conf_server_hbox = gtk.HBox()
-        self.conf_server_hbox.pack_start(self.conf_server_label, expand=False)
-        self.conf_server_hbox.pack_start(self.conf_server_entry, expand=True)
-        self.vbox.pack_start(self.conf_server_hbox, expand=False)
+        self.conf_server_hbox = Gtk.HBox()
+        self.conf_server_hbox.pack_start(self.conf_server_label, False, True, 0)
+        self.conf_server_hbox.pack_start(self.conf_server_entry, True, True, 0)
+        self.vbox.pack_start(self.conf_server_hbox, False, True, 0)
 
         # chatroom name
-        self.chatroom_label = gtk.Label(_("Chatroom"))
-        self.chatroom_entry = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.chatroom_label = Gtk.Label(label=_("Chatroom"))
+        self.chatroom_entry = hildon.Entry(Gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.chatroom_entry.set_text(mirabeau_section.get("chatroom", ""))
-        self.chatroom_hbox = gtk.HBox()
-        self.chatroom_hbox.pack_start(self.chatroom_label, expand=False)
-        self.chatroom_hbox.pack_start(self.chatroom_entry, expand=True)
-        self.vbox.pack_start(self.chatroom_hbox, expand=False)
+        self.chatroom_hbox = Gtk.HBox()
+        self.chatroom_hbox.pack_start(self.chatroom_label, False, True, 0)
+        self.chatroom_hbox.pack_start(self.chatroom_entry, True, True, 0)
+        self.vbox.pack_start(self.chatroom_hbox, False, True, 0)
 
         # MS toggle
-        self.ms_toggle = hildon.CheckButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.ms_toggle = hildon.CheckButton(Gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.ms_toggle.set_label(_("Share the media files of this device"))
         self.ms_toggle.set_active(media_server_enabled)
-        self.vbox.pack_start(self.ms_toggle, expand=False)
+        self.vbox.pack_start(self.ms_toggle, False, True, 0)
 
         self.vbox.show_all()
 
@@ -153,7 +153,7 @@ class ContactsDialog(hildon.PickerDialog):
         roster = coherence.mirabeau.tube_publisher.roster["subscribe"]
         self.contacts = []
         selector = hildon.TouchSelector()
-        store = gtk.ListStore(str)
+        store = Gtk.ListStore(str)
         for handle_id, infos in roster.iteritems():
             alias = infos["%s/alias" % CONNECTION_INTERFACE_ALIASING]
             presence = infos["%s/presence" % CONNECTION_INTERFACE_SIMPLE_PRESENCE]
@@ -164,8 +164,8 @@ class ContactsDialog(hildon.PickerDialog):
 
         column = selector.append_text_column(store, 0)
 
-        renderer = gtk.CellRendererText()
-        column.pack_start(renderer)
+        renderer = Gtk.CellRendererText()
+        column.pack_start(renderer, True)
 
         selector.set_column_selection_mode(hildon.TOUCH_SELECTOR_SELECTION_MODE_MULTIPLE)
         self.set_selector(selector)

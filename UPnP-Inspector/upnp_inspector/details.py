@@ -5,9 +5,9 @@
 
 # Copyright 2009 - Frank Scholz <coherence@beebits.net>
 
-import pygtk
-pygtk.require("2.0")
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 from coherence import log
 
@@ -16,27 +16,27 @@ class DetailsWidget(log.Loggable):
 
     def __init__(self, coherence):
         self.coherence = coherence
-        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         self.window.set_default_size(500,460)
         self.window.set_title('Details')
-        scroll_window = gtk.ScrolledWindow()
-        scroll_window.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.store = gtk.TreeStore(str,object)
-        self.treeview = gtk.TreeView(self.store)
-        column = gtk.TreeViewColumn('Name')
+        scroll_window = Gtk.ScrolledWindow()
+        scroll_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        self.store = Gtk.TreeStore(str,object)
+        self.treeview = Gtk.TreeView(self.store)
+        column = Gtk.TreeViewColumn('Name')
         self.treeview.append_column(column)
-        text_cell = gtk.CellRendererText()
+        text_cell = Gtk.CellRendererText()
         column.pack_start(text_cell, False)
         column.set_attributes(text_cell,text=0)
-        column = gtk.TreeViewColumn('Value')
-        self.treeview.insert_column_with_data_func(-1,'Value',gtk.CellRendererText(),self.celldatamethod)
-        text_cell = gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('Value')
+        self.treeview.insert_column_with_data_func(-1,'Value',Gtk.CellRendererText(),self.celldatamethod)
+        text_cell = Gtk.CellRendererText()
         column.pack_start(text_cell, True)
         column.set_attributes(text_cell,text=1)
 
         self.treeview.connect("button_press_event", self.button_action)
 
-        self.clipboard = gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
+        self.clipboard = Gtk.clipboard_get(Gdk.SELECTION_CLIPBOARD)
 
         scroll_window.add(self.treeview)
         self.window.add(scroll_window)
@@ -81,8 +81,8 @@ class DetailsWidget(log.Loggable):
         row_path,column,_,_ = path
         if event.button == 3:
             iter = self.store.get_iter(row_path)
-            menu = gtk.Menu()
-            item = gtk.MenuItem("copy value")
+            menu = Gtk.Menu()
+            item = Gtk.MenuItem("copy value")
             value,= self.store.get(iter,1)
             if isinstance(value,tuple):
                 item.connect("activate", lambda w: self.clipboard.set_text(value[0]))
@@ -90,13 +90,13 @@ class DetailsWidget(log.Loggable):
                 item.connect("activate", lambda w: self.clipboard.set_text(value))
             menu.append(item)
             if isinstance(value,tuple):
-                menu.append(gtk.SeparatorMenuItem())
-                item = gtk.MenuItem("copy URL")
+                menu.append(Gtk.SeparatorMenuItem())
+                item = Gtk.MenuItem("copy URL")
                 item.connect("activate", lambda w: self.clipboard.set_text(value[1]))
                 menu.append(item)
                 if(len(value) < 3 or
                    (value[2] == True or isinstance(value[2],dict))):
-                    item = gtk.MenuItem("open URL")
+                    item = Gtk.MenuItem("open URL")
                     item.connect("activate", lambda w: self.open_url(value[1]))
                     menu.append(item)
 

@@ -10,9 +10,9 @@ import os.path
 import mimetypes
 mimetypes.init()
 
-import pygtk
-pygtk.require("2.0")
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 from twisted.internet import reactor
 
@@ -42,20 +42,20 @@ namespaces = {'{http://purl.org/dc/elements/1.1/}':'dc:',
 class ItemDetailsWidget(object):
 
     def __init__(self):
-        self.window = gtk.ScrolledWindow()
-        self.window.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.window = Gtk.ScrolledWindow()
+        self.window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         self.window.set_border_width(2)
-        self.window.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        self.store = gtk.TreeStore(str,str)
-        self.treeview = gtk.TreeView(self.store)
-        self.column = gtk.TreeViewColumn()
+        self.window.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        self.store = Gtk.TreeStore(str,str)
+        self.treeview = Gtk.TreeView(self.store)
+        self.column = Gtk.TreeViewColumn()
         self.treeview.append_column(self.column)
         self.treeview.set_headers_visible(False)
         self.treeview.connect("button_press_event", self.button_action)
-        text_cell = gtk.CellRendererText()
+        text_cell = Gtk.CellRendererText()
         self.column.pack_start(text_cell, False)
         self.column.set_attributes(text_cell, text=0)
-        text_cell = gtk.CellRendererText()
+        text_cell = Gtk.CellRendererText()
         self.column.pack_start(text_cell, True)
         self.column.set_attributes(text_cell, text=1)
         self.window.set_size_request(400, 300)
@@ -76,21 +76,21 @@ class ItemDetailsWidget(object):
         if event.button == 3:
             store = widget.get_model()
             iter = store.get_iter(row_path)
-            menu = gtk.Menu()
+            menu = Gtk.Menu()
             key,= store.get(iter,0)
             value,= store.get(iter,1)
 
-            clipboard = gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
+            clipboard = Gtk.clipboard_get(Gdk.SELECTION_CLIPBOARD)
 
             if key in ['DIDL-Lite:res','upnp:albumArtURI']:
-                item = gtk.MenuItem("copy URL")
+                item = Gtk.MenuItem("copy URL")
                 item.connect("activate", lambda w: clipboard.set_text(value))
                 menu.append(item)
-                item = gtk.MenuItem("open URL")
+                item = Gtk.MenuItem("open URL")
                 item.connect("activate", lambda w: self.open_url(value))
                 menu.append(item)
             else:
-                item = gtk.MenuItem("copy value")
+                item = Gtk.MenuItem("copy value")
                 item.connect("activate", lambda w: clipboard.set_text(value))
                 menu.append(item)
 
@@ -118,41 +118,41 @@ class TreeWidget(object):
         self.mediaserver_found(device)
 
     def build_ui(self):
-        self.window = gtk.ScrolledWindow()
-        self.window.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.window = Gtk.ScrolledWindow()
+        self.window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
         icon = resource_filename(__name__, os.path.join('icons','folder.png'))
-        self.folder_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.folder_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','audio-x-generic.png'))
-        self.audio_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.audio_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','video-x-generic.png'))
-        self.video_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.video_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
         icon = resource_filename(__name__, os.path.join('icons','image-x-generic.png'))
-        self.image_icon = gtk.gdk.pixbuf_new_from_file(icon)
+        self.image_icon = GdkPixbuf.Pixbuf.new_from_file(icon)
 
-        self.store = gtk.TreeStore(str,  # 0: name or title
+        self.store = Gtk.TreeStore(str,  # 0: name or title
                                    str,  # 1: id, '0' for the device
                                    str,  # 2: upnp_class, 'root' for the device
                                    int,  # 3: child count, -1 if not available
                                    str,  # 4: device udn, '' for an item
                                    str,  # 5: service path, '' for a non container item
-                                   gtk.gdk.Pixbuf,
+                                   GdkPixbuf.Pixbuf,
                                    str,  # 7: DIDLLite fragment, '' for a non upnp item
-                                   gtk.gdk.Pixbuf
+                                   GdkPixbuf.Pixbuf
                                 )
 
-        self.treeview = gtk.TreeView(self.store)
-        self.column = gtk.TreeViewColumn('Items')
+        self.treeview = Gtk.TreeView(self.store)
+        self.column = Gtk.TreeViewColumn('Items')
         self.treeview.append_column(self.column)
-        self.treeview.enable_model_drag_source(gtk.gdk.BUTTON1_MASK,
+        self.treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK,
                                     [('upnp/metadata', 0, 1)],
-                                    gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_PRIVATE)
+                                    Gdk.DragAction.DEFAULT | Gdk.DragAction.PRIVATE)
         self.treeview.connect("drag_data_get", self.drag_data_get_cb)
 
 
         # create a CellRenderers to render the data
-        icon_cell = gtk.CellRendererPixbuf()
-        text_cell = gtk.CellRendererText()
+        icon_cell = Gtk.CellRendererPixbuf()
+        text_cell = Gtk.CellRendererText()
 
         self.column.pack_start(icon_cell, False)
         self.column.pack_start(text_cell, True)
@@ -213,7 +213,7 @@ class TreeWidget(object):
                         protocol,network,content_format,additional_info = res.protocolInfo.split(':')
                         if(content_format == 'image/jpeg' and
                            'DLNA.ORG_PN=JPEG_TN' in additional_info.split(';')):
-                            icon_loader = gtk.gdk.PixbufLoader()
+                            icon_loader = GdkPixbuf.PixbufLoader()
                             icon_loader.write(urllib.urlopen(str(res.data)).read())
                             icon_loader.close()
                             icon = icon_loader.get_pixbuf()
@@ -305,8 +305,8 @@ class TreeWidget(object):
                                     starting_index=0,requested_count=0,force=True,expand=expanded)
 
 
-                    menu = gtk.Menu()
-                    item = gtk.MenuItem("refresh container")
+                    menu = Gtk.Menu()
+                    item = Gtk.MenuItem("refresh container")
                     item.connect("activate", lambda x: refresh(widget,row_path))
                     menu.append(item)
 
@@ -356,19 +356,19 @@ class TreeWidget(object):
                             d.addErrback(handle_error)
 
                         if menu == None:
-                            menu = gtk.Menu()
+                            menu = Gtk.Menu()
                         else:
-                            menu.append(gtk.SeparatorMenuItem())
+                            menu.append(Gtk.SeparatorMenuItem())
 
-                        item = gtk.MenuItem("play on MediaRenderer...")
+                        item = Gtk.MenuItem("play on MediaRenderer...")
                         item.set_sensitive(False)
                         menu.append(item)
-                        menu.append(gtk.SeparatorMenuItem())
+                        menu.append(Gtk.SeparatorMenuItem())
                         for device in self.coherence.devices:
                             if device.get_device_type().split(':')[3].lower() == 'mediarenderer':
                                 service = device.get_service_by_type('AVTransport')
                                 if service != None:
-                                    item = gtk.MenuItem(device.get_friendly_name())
+                                    item = Gtk.MenuItem(device.get_friendly_name())
                                     item.connect("activate", lambda x,s,u,d: play(s,u,d),service,url,didl)
                                     menu.append(item)
 
@@ -597,13 +597,13 @@ class MediaServerWidget(log.Loggable):
     def __init__(self,coherence,device):
         self.coherence = coherence
         self.device = device
-        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         self.window.connect("delete_event", self.hide)
         self.window.set_default_size(400,600)
         self.window.set_title('Browse MediaServer %s' % device.get_friendly_name())
         self.item_details = ItemDetailsWidget()
         self.ui = TreeWidget(coherence,device,self.item_details.store)
-        vpane = gtk.VPaned()
+        vpane = Gtk.VPaned()
         vpane.add1(self.ui.window)
         vpane.add2(self.item_details.window)
         self.window.add(vpane)

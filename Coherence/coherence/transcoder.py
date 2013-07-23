@@ -13,10 +13,10 @@
 """
 
 import pygst
-pygst.require('0.10')
-import gst
-import gobject
-gobject.threads_init()
+pyGst.require('0.10')
+from gi.repository import Gst
+from gi.repository import GObject
+GObject.threads_init()
 import os.path
 import urllib
 from twisted.web import resource, server
@@ -34,23 +34,23 @@ class InternalTranscoder(object):
         list of available transcoders
     """
 
-class FakeTransformer(gst.Element, log.Loggable):
+class FakeTransformer(Gst.Element, log.Loggable):
     logCategory = 'faker_datasink'
 
-    _sinkpadtemplate = gst.PadTemplate ("sinkpadtemplate",
-                                        gst.PAD_SINK,
-                                        gst.PAD_ALWAYS,
-                                        gst.caps_new_any())
+    _sinkpadtemplate = Gst.PadTemplate ("sinkpadtemplate",
+                                        Gst.PAD_SINK,
+                                        Gst.PAD_ALWAYS,
+                                        Gst.caps_new_any())
 
-    _srcpadtemplate = gst.PadTemplate ("srcpadtemplate",
-                                        gst.PAD_SRC,
-                                        gst.PAD_ALWAYS,
-                                        gst.caps_new_any())
+    _srcpadtemplate = Gst.PadTemplate ("srcpadtemplate",
+                                        Gst.PAD_SRC,
+                                        Gst.PAD_ALWAYS,
+                                        Gst.caps_new_any())
 
     def __init__(self, destination = None, request = None):
-        gst.Element.__init__(self)
-        self.sinkpad = gst.Pad(self._sinkpadtemplate, "sink")
-        self.srcpad = gst.Pad(self._srcpadtemplate, "src")
+        Gst.Element.__init__(self)
+        self.sinkpad = Gst.Pad(self._sinkpadtemplate, "sink")
+        self.srcpad = Gst.Pad(self._srcpadtemplate, "src")
         self.add_pad(self.sinkpad)
         self.add_pad(self.srcpad)
 
@@ -70,41 +70,41 @@ class FakeTransformer(gst.Element, log.Loggable):
         if self.proxy:
             # we are in proxy mode already
             self.srcpad.push(p_buffer)
-            return gst.FLOW_OK
+            return Gst.FLOW_OK
 
         self.buffer = self.buffer + p_buffer.data
         if not self.buffer_size:
             try:
                 self.buffer_size, _a_type = struct.unpack(">L4s", self.buffer[:8])
             except:
-                return gst.FLOW_OK
+                return Gst.FLOW_OK
 
         if len(self.buffer) < self.buffer_size:
             # we need to buffer more
-            return gst.FLOW_OK
+            return Gst.FLOW_OK
 
         p_buffer = self.buffer[self.buffer_size:]
         fake_header = self.get_fake_header()
-        n_buf = gst.Buffer(fake_header + p_buffer)
+        n_buf = Gst.Buffer(fake_header + p_buffer)
         self.proxy = True
         self.srcpad.push(n_buf)
 
-        return gst.FLOW_OK
+        return Gst.FLOW_OK
 
-gobject.type_register(FakeTransformer)
+GObject.type_register(FakeTransformer)
 
-class DataSink(gst.Element, log.Loggable):
+class DataSink(Gst.Element, log.Loggable):
 
     logCategory = 'transcoder_datasink'
 
-    _sinkpadtemplate = gst.PadTemplate ("sinkpadtemplate",
-                                        gst.PAD_SINK,
-                                        gst.PAD_ALWAYS,
-                                        gst.caps_new_any())
+    _sinkpadtemplate = Gst.PadTemplate ("sinkpadtemplate",
+                                        Gst.PAD_SINK,
+                                        Gst.PAD_ALWAYS,
+                                        Gst.caps_new_any())
 
     def __init__(self, destination = None, request = None):
-        gst.Element.__init__(self)
-        self.sinkpad = gst.Pad(self._sinkpadtemplate, "sink")
+        Gst.Element.__init__(self)
+        self.sinkpad = Gst.Pad(self._sinkpadtemplate, "sink")
         self.add_pad(self.sinkpad)
 
         self.sinkpad.set_chain_function(self.chainfunc)
@@ -121,7 +121,7 @@ class DataSink(gst.Element, log.Loggable):
 
     def chainfunc(self, pad, p_buffer):
         if self.closed:
-            return gst.FLOW_OK
+            return Gst.FLOW_OK
         if self.destination is not None:
             self.destination.write(p_buffer.data)
         elif self.request is not None:
@@ -133,15 +133,15 @@ class DataSink(gst.Element, log.Loggable):
             self.buffer += p_buffer.data
 
         self.data_size += p_buffer.size
-        return gst.FLOW_OK
+        return Gst.FLOW_OK
 
     def eventfunc(self, pad, event):
-        if event.type == gst.EVENT_NEWSEGMENT:
+        if event.type == Gst.EVENT_NEWSEGMENT:
             if not self.got_new_segment:
                 self.got_new_segment = True
             else:
                 self.closed = True
-        elif event.type == gst.EVENT_EOS:
+        elif event.type == Gst.EVENT_EOS:
             if self.destination is not None:
                 self.destination.close()
             elif self.request is not None:
@@ -151,7 +151,7 @@ class DataSink(gst.Element, log.Loggable):
         return True
 
 
-gobject.type_register(DataSink)
+GObject.type_register(DataSink)
 
 class GStreamerPipeline(resource.Resource, log.Loggable):
     logCategory = 'gstreamer'
@@ -168,8 +168,8 @@ class GStreamerPipeline(resource.Resource, log.Loggable):
         resource.Resource.__init__(self)
 
     def parse_pipeline(self):
-        self.pipeline = gst.parse_launch(self.pipeline_description)
-        self.appsink = gst.element_factory_make("appsink", "sink")
+        self.pipeline = Gst.parse_launch(self.pipeline_description)
+        self.appsink = Gst.ElementFactory.make("appsink", "sink")
         self.appsink.set_property('emit-signals', True)
         self.pipeline.add(self.appsink)
         enc = self.pipeline.get_by_name("enc")
@@ -182,7 +182,7 @@ class GStreamerPipeline(resource.Resource, log.Loggable):
         self.info("GStreamerPipeline start %r %r", request,
                 self.pipeline_description)
         self.requests.append(request)
-        self.pipeline.set_state(gst.STATE_PLAYING)
+        self.pipeline.set_state(Gst.State.PLAYING)
 
         d = request.notifyFinish()
         d.addBoth(self.requestFinished, request)
@@ -264,7 +264,7 @@ class GStreamerPipeline(resource.Resource, log.Loggable):
         """ we need to find a way to destroy the pipeline here
         """
         #from twisted.internet import reactor
-        #reactor.callLater(0, self.pipeline.set_state, gst.STATE_NULL)
+        #reactor.callLater(0, self.pipeline.set_state, Gst.State.NULL)
         self.requests.remove(request)
         if not self.requests:
             self.cleanup()
@@ -272,16 +272,16 @@ class GStreamerPipeline(resource.Resource, log.Loggable):
     def on_message(self, bus, message):
         t = message.type
         print "on_message", t
-        if t == gst.MESSAGE_ERROR:
+        if t == Gst.MessageType.ERROR:
             #err, debug = message.parse_error()
             #print "Error: %s" % err, debug
             self.cleanup()
-        elif t == gst.MESSAGE_EOS:
+        elif t == Gst.MessageType.EOS:
             self.cleanup()
 
     def cleanup(self):
         self.info("pipeline cleanup")
-        self.pipeline.set_state(gst.STATE_NULL)
+        self.pipeline.set_state(Gst.State.NULL)
         self.requests = []
         self.streamheader = None
 
@@ -328,21 +328,21 @@ class BaseTranscoder(resource.Resource, log.Loggable):
         """ we need to find a way to destroy the pipeline here
         """
         #from twisted.internet import reactor
-        #reactor.callLater(0, self.pipeline.set_state, gst.STATE_NULL)
-        gobject.idle_add(self.cleanup)
+        #reactor.callLater(0, self.pipeline.set_state, Gst.State.NULL)
+        GObject.idle_add(self.cleanup)
 
     def on_message(self, bus, message):
         t = message.type
         print "on_message", t
-        if t == gst.MESSAGE_ERROR:
+        if t == Gst.MessageType.ERROR:
             #err, debug = message.parse_error()
             #print "Error: %s" % err, debug
             self.cleanup()
-        elif t == gst.MESSAGE_EOS:
+        elif t == Gst.MessageType.EOS:
             self.cleanup()
 
     def cleanup(self):
-        self.pipeline.set_state(gst.STATE_NULL)
+        self.pipeline.set_state(Gst.State.NULL)
 
 
 class PCMTranscoder(BaseTranscoder, InternalTranscoder):
@@ -351,13 +351,13 @@ class PCMTranscoder(BaseTranscoder, InternalTranscoder):
 
     def start(self, request = None):
         self.info("PCMTranscoder start %r %r", request, self.uri)
-        self.pipeline = gst.parse_launch(
+        self.pipeline = Gst.parse_launch(
             "%s ! decodebin ! audioconvert name=conv" % self.uri)
 
         conv = self.pipeline.get_by_name('conv')
-        caps = gst.Caps("audio/x-raw-int,rate=44100,endianness=4321,channels=2,width=16,depth=16,signed=true")
+        caps = Gst.Caps("audio/x-raw-int,rate=44100,endianness=4321,channels=2,width=16,depth=16,signed=true")
         #FIXME: UGLY. 'filter' is a python builtin!
-        filter = gst.element_factory_make("capsfilter", "filter")
+        filter = Gst.ElementFactory.make("capsfilter", "filter")
         filter.set_property("caps", caps)
         self.pipeline.add(filter)
         conv.link(filter)
@@ -365,7 +365,7 @@ class PCMTranscoder(BaseTranscoder, InternalTranscoder):
         sink = DataSink(destination = self.destination, request = request)
         self.pipeline.add(sink)
         filter.link(sink)
-        self.pipeline.set_state(gst.STATE_PLAYING)
+        self.pipeline.set_state(Gst.State.PLAYING)
 
         d = request.notifyFinish()
         d.addBoth(self.requestFinished)
@@ -378,7 +378,7 @@ class WAVTranscoder(BaseTranscoder, InternalTranscoder):
 
     def start(self, request = None):
         self.info("start %r", request)
-        self.pipeline = gst.parse_launch(
+        self.pipeline = Gst.parse_launch(
             "%s ! decodebin ! audioconvert ! wavenc name=enc" % self.uri)
         enc = self.pipeline.get_by_name('enc')
         sink = DataSink(destination = self.destination, request = request)
@@ -386,7 +386,7 @@ class WAVTranscoder(BaseTranscoder, InternalTranscoder):
         enc.link(sink)
         #bus = self.pipeline.get_bus()
         #bus.connect('message', self.on_message)
-        self.pipeline.set_state(gst.STATE_PLAYING)
+        self.pipeline.set_state(Gst.State.PLAYING)
 
         d = request.notifyFinish()
         d.addBoth(self.requestFinished)
@@ -399,13 +399,13 @@ class MP3Transcoder(BaseTranscoder, InternalTranscoder):
 
     def start(self, request = None):
         self.info("start %r", request)
-        self.pipeline = gst.parse_launch(
+        self.pipeline = Gst.parse_launch(
             "%s ! decodebin ! audioconvert ! lame name=enc" % self.uri)
         enc = self.pipeline.get_by_name('enc')
         sink = DataSink(destination = self.destination, request = request)
         self.pipeline.add(sink)
         enc.link(sink)
-        self.pipeline.set_state(gst.STATE_PLAYING)
+        self.pipeline.set_state(Gst.State.PLAYING)
 
         d = request.notifyFinish()
         d.addBoth(self.requestFinished)
@@ -420,13 +420,13 @@ class MP4Transcoder(BaseTranscoder, InternalTranscoder):
 
     def start(self, request = None):
         self.info("start %r", request)
-        self.pipeline = gst.parse_launch(
+        self.pipeline = Gst.parse_launch(
             "%s ! qtdemux name=d ! queue ! h264parse ! mp4mux name=mux d. ! queue ! mux." % self.uri)
         mux = self.pipeline.get_by_name('mux')
         sink = DataSink(destination = self.destination, request = request)
         self.pipeline.add(sink)
         mux.link(sink)
-        self.pipeline.set_state(gst.STATE_PLAYING)
+        self.pipeline.set_state(Gst.State.PLAYING)
 
         d = request.notifyFinish()
         d.addBoth(self.requestFinished)
@@ -440,13 +440,13 @@ class MP2TSTranscoder(BaseTranscoder, InternalTranscoder):
     def start(self, request = None):
         self.info("start %r", request)
         ### FIXME mpeg2enc
-        self.pipeline = gst.parse_launch(
+        self.pipeline = Gst.parse_launch(
             "mpegtsmux name=mux %s ! decodebin2 name=d ! queue ! ffmpegcolorspace ! mpeg2enc ! queue ! mux. d. ! queue ! audioconvert ! twolame ! queue ! mux." % self.uri)
         enc = self.pipeline.get_by_name('mux')
         sink = DataSink(destination = self.destination, request = request)
         self.pipeline.add(sink)
         enc.link(sink)
-        self.pipeline.set_state(gst.STATE_PLAYING)
+        self.pipeline.set_state(Gst.State.PLAYING)
 
         d = request.notifyFinish()
         d.addBoth(self.requestFinished)
@@ -480,18 +480,18 @@ class ThumbTranscoder(BaseTranscoder, InternalTranscoder):
         except:
             type = 'jpeg'
         if type == 'png':
-            self.pipeline = gst.parse_launch(
+            self.pipeline = Gst.parse_launch(
                 "%s ! decodebin2 ! videoscale ! video/x-raw-yuv,width=160,height=160 ! pngenc name=enc" % self.uri)
             self.contentType = 'image/png'
         else:
-            self.pipeline = gst.parse_launch(
+            self.pipeline = Gst.parse_launch(
                 "%s ! decodebin2 ! videoscale ! video/x-raw-yuv,width=160,height=160 ! jpegenc name=enc" % self.uri)
             self.contentType = 'image/jpeg'
         enc = self.pipeline.get_by_name('enc')
         sink = DataSink(destination = self.destination, request = request)
         self.pipeline.add(sink)
         enc.link(sink)
-        self.pipeline.set_state(gst.STATE_PLAYING)
+        self.pipeline.set_state(Gst.State.PLAYING)
 
         d = request.notifyFinish()
         d.addBoth(self.requestFinished)
@@ -510,12 +510,12 @@ class GStreamerTranscoder(BaseTranscoder):
 
     def start(self, request = None):
         self.info("start %r", request)
-        self.pipeline = gst.parse_launch(self.pipeline_description % self.uri)
+        self.pipeline = Gst.parse_launch(self.pipeline_description % self.uri)
         enc = self.pipeline.get_by_name('mux')
         sink = DataSink(destination = self.destination, request = request)
         self.pipeline.add(sink)
         enc.link(sink)
-        self.pipeline.set_state(gst.STATE_PLAYING)
+        self.pipeline.set_state(Gst.State.PLAYING)
 
         d = request.notifyFinish()
         d.addBoth(self.requestFinished)
