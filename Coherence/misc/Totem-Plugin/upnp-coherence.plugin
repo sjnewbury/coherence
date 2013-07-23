@@ -1,4 +1,4 @@
-[Totem Plugin]
+[Plugin]
 Loader=python
 Module=upnp-coherence
 IAge=1
